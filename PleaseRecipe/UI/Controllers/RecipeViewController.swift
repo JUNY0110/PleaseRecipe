@@ -49,25 +49,33 @@ final class RecipeViewController: UIViewController, StretchyHeaderViewDelegate {
         view.backgroundColor = .systemBackground
         tabBarController?.tabBar.isHidden = true
         stretchyHeaderView.delegate = self
-        configureStretchyHeader()
+        
+        addSubViews()
     }
     
     override func viewIsAppearing(_ animated: Bool) {
         super.viewIsAppearing(animated)
         
         setupMetric()
+        configureStretchyHeader()
         layout()
     }
     
     // MARK: - Layout
     
-    private func layout() {
+    private func addSubViews() {
         view.addSubview(tableView)
+    }
+    
+    private func layout() {
         tableView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         
-        tableView.tableHeaderView?.frame = CGRect(x: 0, y: 0, width: Metric.stickyHeaderWidth, height: Metric.stickyHeaderHeight)
+        tableView.tableHeaderView?.frame = CGRect(x: 0,
+                                                  y: 0,
+                                                  width: Metric.stickyHeaderWidth,
+                                                  height: Metric.stickyHeaderHeight)
     }
     
     // MARK: - Methods
@@ -119,7 +127,8 @@ extension RecipeViewController: UITableViewDelegate {
     
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         guard let header = tableView.tableHeaderView as? StretchyHeaderView else { return }
-        header.scrollViewDidScroll(scrollView: tableView, headerImageHeight: Metric.stickyHeaderImageHeightMin)
+        header.scrollViewDidScroll(scrollView: tableView, 
+                                   headerImageHeight: Metric.stickyHeaderImageHeightMin)
         
         let remainingTopSpacing = scrollView.contentOffset.y
         configureNavigationAppearance(with: remainingTopSpacing)

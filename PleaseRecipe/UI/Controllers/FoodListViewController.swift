@@ -13,16 +13,7 @@ final class FoodListViewController: UIViewController {
 
     // MARK: - Properties
     
-    var viewModel: FoodListViewModel! {
-        didSet {
-            viewModel.onCompletedData = {
-                DispatchQueue.main.async {
-                    let snapshot = self.setupSnapshot()
-                    self.applySnapshot(snapshot)
-                }
-            }
-        }
-    }
+    private let viewModel: FoodListViewModel
     
     // MARK: - Views
     
@@ -35,6 +26,17 @@ final class FoodListViewController: UIViewController {
         return $0
     }(UITableView())
     
+    // MARK: - Init
+    
+    init(viewModel: FoodListViewModel) {
+        self.viewModel = viewModel
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
     // MARK: - LifeCycle
     
     override func loadView() {
@@ -44,7 +46,7 @@ final class FoodListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-                
+        
         configureNavigationBarItems()
         configureSearchBar()
         setupDataSource()
@@ -54,14 +56,9 @@ final class FoodListViewController: UIViewController {
         super.viewWillAppear(animated)
         
         configureNavigationBarColor()
-        appearTabBar()
     }
     
     // MARK: - Methods
-    
-    private func setupViewModel() {
-       viewModel = FoodListViewModel()
-    }
     
     private func moveToRecipeViewController(_ data: Food) {
         let recipeViewController = RecipeViewController()
@@ -71,10 +68,6 @@ final class FoodListViewController: UIViewController {
         recipeViewController.viewModel = .init(width: width)
         
         self.navigationController?.pushViewController(recipeViewController, animated: true)
-    }
-    
-    private func appearTabBar() {
-//        tabBarController?.tabBar.isHidden = false
     }
 }
 
@@ -108,17 +101,7 @@ extension FoodListViewController {
 
 extension FoodListViewController {
     private func setupDataSource() {
-        viewModel.setupDataSource(foodListView)
-        foodListView.dataSource = viewModel.diffableDataSource
-    }
-    
-    private func setupSnapshot(with word: String = "") -> NSDiffableDataSourceSnapshot<Section, Food> {
-        viewModel.setupSnapshot(with: word)
-        return viewModel.snapshot
-    }
-    
-    private func applySnapshot(_ snapshot: NSDiffableDataSourceSnapshot<Section, Food>) {
-        viewModel.applySnapshot(snapshot)
+        foodListView.dataSource = viewModel.setupDataSource(foodListView)
     }
 }
 
@@ -126,23 +109,21 @@ extension FoodListViewController {
 
 extension FoodListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        let snapshot = setupSnapshot(with: searchText)
-        applySnapshot(snapshot)
+        viewModel.applySnapshot(with: searchText)
     }
     
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let text = searchBar.text, !text.replacingOccurrences(of: " ", with: "").isEmpty else {
+        guard let text = searchBar.text, 
+                 !text.replacingOccurrences(of: " ", with: "").isEmpty else {
             return
         }
         
-        let snapshot = setupSnapshot(with: text)
-        applySnapshot(snapshot)
+        viewModel.applySnapshot(with: text)
         dismissKeyboard()
     }
     
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
-        let snapshot = setupSnapshot()
-        applySnapshot(snapshot)
+        viewModel.applySnapshot()
         dismissKeyboard()
     }
     

@@ -9,6 +9,10 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
+    // MARK: - Properties
+    
+    private let foodListViewModel = FoodListViewModel()
+    
     // MARK: - LifeCycle
     
     override func viewDidLoad() {
@@ -32,9 +36,9 @@ final class TabBarController: UITabBarController {
     }
     
     private func setupTabBar() {
-        let vc1 = UINavigationController(rootViewController: FoodListViewController())
-        let vc2 = UINavigationController(rootViewController: FoodListViewController())
-        let vc3 = UINavigationController(rootViewController: FoodListViewController())
+        let vc1 = UINavigationController(rootViewController: UIViewController())
+        let vc2 = UINavigationController(rootViewController: FoodListViewController(viewModel: foodListViewModel))
+        let vc3 = UINavigationController(rootViewController: UIViewController())
         
         vc1.title = "냉장고"
         vc2.title = "레시피"

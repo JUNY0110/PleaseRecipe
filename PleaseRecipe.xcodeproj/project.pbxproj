@@ -14,7 +14,6 @@
 		984B39F32AE7A09A00293DCB /* RecipeHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984B39F22AE7A09A00293DCB /* RecipeHeader.swift */; };
 		984B39FB2AE8BCEF00293DCB /* RecipeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984B39FA2AE8BCEF00293DCB /* RecipeViewController.swift */; };
 		984B39FD2AE8BFA900293DCB /* StretchyHeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984B39FC2AE8BFA900293DCB /* StretchyHeaderView.swift */; };
-		987A94D12ADA4DF000F163E1 /* Font.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987A94D02ADA4DF000F163E1 /* Font.swift */; };
 		987A94D42ADA523600F163E1 /* FoodListModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987A94D32ADA523600F163E1 /* FoodListModel.swift */; };
 		987A94D82ADAE2F700F163E1 /* FoodListCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 987A94D72ADAE2F700F163E1 /* FoodListCellViewModel.swift */; };
 		98A500002AD2861E0022AEC0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 98A5FFFF2AD2861E0022AEC0 /* Assets.xcassets */; };
@@ -27,7 +26,6 @@
 		98A5FFFB2AD2861C0022AEC0 /* FoodListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98A5FFFA2AD2861C0022AEC0 /* FoodListViewController.swift */; };
 		98B94BC82AF0E1A400DA21A4 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 98B94BC72AF0E1A400DA21A4 /* Lottie */; };
 		98B94BCA2AF0E22600DA21A4 /* foodLottie.json in Resources */ = {isa = PBXBuildFile; fileRef = 98B94BC92AF0E22600DA21A4 /* foodLottie.json */; };
-		98B94BCC2AF0E2D900DA21A4 /* SplashViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98B94BCB2AF0E2D900DA21A4 /* SplashViewController.swift */; };
 		98BC3F682AEBA5F200447833 /* SwiftSoup in Frameworks */ = {isa = PBXBuildFile; productRef = 98BC3F672AEBA5F200447833 /* SwiftSoup */; };
 		98CBD7302AFCFE0E008F0102 /* UIViewController+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98CBD72F2AFCFE0E008F0102 /* UIViewController+Extension.swift */; };
 		98CBD73A2AFFAB3D008F0102 /* ImageCacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98CBD7392AFFAB3D008F0102 /* ImageCacheManager.swift */; };
@@ -60,7 +58,6 @@
 		984B39F22AE7A09A00293DCB /* RecipeHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeHeader.swift; sourceTree = "<group>"; };
 		984B39FA2AE8BCEF00293DCB /* RecipeViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecipeViewController.swift; sourceTree = "<group>"; };
 		984B39FC2AE8BFA900293DCB /* StretchyHeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StretchyHeaderView.swift; sourceTree = "<group>"; };
-		987A94D02ADA4DF000F163E1 /* Font.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Font.swift; sourceTree = "<group>"; };
 		987A94D32ADA523600F163E1 /* FoodListModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodListModel.swift; sourceTree = "<group>"; };
 		987A94D72ADAE2F700F163E1 /* FoodListCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodListCellViewModel.swift; sourceTree = "<group>"; };
 		98A500022AD2861E0022AEC0 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -74,7 +71,6 @@
 		98A5FFFA2AD2861C0022AEC0 /* FoodListViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoodListViewController.swift; sourceTree = "<group>"; };
 		98A5FFFF2AD2861E0022AEC0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		98B94BC92AF0E22600DA21A4 /* foodLottie.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = foodLottie.json; path = ../../../../../Downloads/foodLottie.json; sourceTree = "<group>"; };
-		98B94BCB2AF0E2D900DA21A4 /* SplashViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashViewController.swift; sourceTree = "<group>"; };
 		98CBD72F2AFCFE0E008F0102 /* UIViewController+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Extension.swift"; sourceTree = "<group>"; };
 		98CBD7392AFFAB3D008F0102 /* ImageCacheManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageCacheManager.swift; sourceTree = "<group>"; };
 		98CBD73D2B00A8AC008F0102 /* UIImage+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIImage+Extension.swift"; sourceTree = "<group>"; };
@@ -122,18 +118,9 @@
 			children = (
 				98A5FFFF2AD2861E0022AEC0 /* Assets.xcassets */,
 				98B94BC92AF0E22600DA21A4 /* foodLottie.json */,
-				987A94CF2ADA4DE600F163E1 /* Fonts */,
 				9810ABD22AD4EE5100EDF66E /* Constants */,
 			);
 			path = Resources;
-			sourceTree = "<group>";
-		};
-		987A94CF2ADA4DE600F163E1 /* Fonts */ = {
-			isa = PBXGroup;
-			children = (
-				987A94D02ADA4DF000F163E1 /* Font.swift */,
-			);
-			path = Fonts;
 			sourceTree = "<group>";
 		};
 		987A94D52ADA579500F163E1 /* UI */ = {
@@ -178,7 +165,6 @@
 			isa = PBXGroup;
 			children = (
 				98A5FFFA2AD2861C0022AEC0 /* FoodListViewController.swift */,
-				98B94BCB2AF0E2D900DA21A4 /* SplashViewController.swift */,
 				9810ABD52AD4F3C300EDF66E /* TabBarController.swift */,
 				984B39FA2AE8BCEF00293DCB /* RecipeViewController.swift */,
 			);
@@ -385,7 +371,6 @@
 				98A500112AD286B00022AEC0 /* FoodListViewModel.swift in Sources */,
 				98CBD7302AFCFE0E008F0102 /* UIViewController+Extension.swift in Sources */,
 				98E7274D2AD63DBB007A9CE5 /* FoodListCell.swift in Sources */,
-				987A94D12ADA4DF000F163E1 /* Font.swift in Sources */,
 				987A94D42ADA523600F163E1 /* FoodListModel.swift in Sources */,
 				9810ABD62AD4F3C300EDF66E /* TabBarController.swift in Sources */,
 				98A5FFFB2AD2861C0022AEC0 /* FoodListViewController.swift in Sources */,
@@ -395,7 +380,6 @@
 				98A5001F2AD2A2DE0022AEC0 /* NetworkManager.swift in Sources */,
 				98A5FFF72AD2861C0022AEC0 /* AppDelegate.swift in Sources */,
 				984B39FD2AE8BFA900293DCB /* StretchyHeaderView.swift in Sources */,
-				98B94BCC2AF0E2D900DA21A4 /* SplashViewController.swift in Sources */,
 				98A5FFF92AD2861C0022AEC0 /* SceneDelegate.swift in Sources */,
 				984B39FB2AE8BCEF00293DCB /* RecipeViewController.swift in Sources */,
 				984B39F12AE79FC100293DCB /* RecipeCell.swift in Sources */,

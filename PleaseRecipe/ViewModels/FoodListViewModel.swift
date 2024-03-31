@@ -19,11 +19,11 @@ final class FoodListViewModel {
     
     private var foodDatum = [Food]() {
         didSet {
-            onCompletedData()
+            DispatchQueue.main.async {
+                self.applySnapshot()
+            }
         }
     }
-    
-    var onCompletedData: () -> () = {}
     
     // MARK: - Init
     
@@ -40,21 +40,13 @@ final class FoodListViewModel {
             }
         }
     }
-
-    func setupSnapshot(with word: String = "") {
-        snapshot = NSDiffableDataSourceSnapshot<Section, Food>()
-        snapshot.appendSections([.food])
-
-        let filteredFoodDatum = filteredFoodDatum(with: word)
-        snapshot.appendItems(filteredFoodDatum)
-    }
     
     private func filteredFoodDatum(with word: String) -> [Food] {
         let filteredDatum = foodDatum.filter { $0.foodName.contains(word) }
         return filteredDatum.isEmpty ? foodDatum : filteredDatum
     }
     
-    func setupDataSource(_ tableView: UITableView) {
+    func setupDataSource(_ tableView: UITableView) -> UITableViewDiffableDataSource<Section, Food> {
         diffableDataSource = UITableViewDiffableDataSource<Section, Food>(tableView: tableView, cellProvider: { tableView, indexPath, itemIdentifier in
             
             let cell = tableView.dequeueReusableCell(withIdentifier: FoodListCell.identifier, for: indexPath) as! FoodListCell
@@ -64,9 +56,17 @@ final class FoodListViewModel {
             
             return cell
         })
+        
+        return diffableDataSource
     }
     
-    func applySnapshot(_ snapshot: NSDiffableDataSourceSnapshot<Section, Food>) {
+    func applySnapshot(with word: String = "") {
+        snapshot = NSDiffableDataSourceSnapshot<Section, Food>()
+        snapshot.appendSections([.food])
+
+        let filteredFoodDatum = filteredFoodDatum(with: word)
+        snapshot.appendItems(filteredFoodDatum)
+        
         diffableDataSource.apply(snapshot)
     }
 }
