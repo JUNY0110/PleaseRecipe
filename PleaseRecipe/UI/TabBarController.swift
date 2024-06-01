@@ -9,10 +9,6 @@ import UIKit
 
 final class TabBarController: UITabBarController {
     
-    // MARK: - Properties
-    
-    private let foodListViewModel = FoodListViewModel()
-    
     // MARK: - LifeCycle
     
     override func viewDidLoad() {
@@ -36,13 +32,13 @@ final class TabBarController: UITabBarController {
     }
     
     private func setupTabBar() {
-        let vc1 = UINavigationController(rootViewController: UIViewController())
-        let vc2 = UINavigationController(rootViewController: FoodListViewController(viewModel: foodListViewModel))
+        let vc1 = UINavigationController(rootViewController: MaterialStorageViewController())
+        let vc2 = UINavigationController(rootViewController: UIViewController())
         let vc3 = UINavigationController(rootViewController: UIViewController())
         
-        vc1.title = "냉장고"
+        vc1.title = "재료창고"
         vc2.title = "레시피"
-        vc3.title = "장바구니"
+        vc3.title = "설정"
         
         setViewControllers([vc1, vc2, vc3], animated: false)
         modalPresentationStyle = .fullScreen
@@ -51,13 +47,16 @@ final class TabBarController: UITabBarController {
     
     private func setupItemImage() {
         guard let items = tabBar.items else { return }
-        items[0].image = UIImage(systemName: "refrigerator")
-        items[1].image = UIImage(systemName: "frying.pan")
-        items[2].image = UIImage(systemName: "cart")
+        let imageNames = ["refrigerator", "frying.pan", "cart"]
+        
+        for i in 0..<imageNames.count {
+            let imageName = imageNames[i]
+            items[i].image = UIImage(systemName: imageName)
+        }
     }
     
     private func setTabBarItemColor(_ itemAppearance: UITabBarItemAppearance) {
-        itemAppearance.selected.iconColor = Color.mainColor
-        itemAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: Color.mainColor]
+        itemAppearance.selected.iconColor = Color.mainRed
+        itemAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: Color.mainRed]
     }
 }
