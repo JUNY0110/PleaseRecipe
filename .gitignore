@@ -145,7 +145,6 @@ xcuserdata
 /*.gcno
 **/xcshareddata/WorkspaceSettings.xcsettings
 
-*.xcassets
-*.json
+PleaseRecipe/Resources/
 
 # End of https://www.toptal.com/developers/gitignore/api/xcode,firebase,swift,swiftpackagemanager,cocoapods
