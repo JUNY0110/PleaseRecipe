@@ -52,8 +52,8 @@ final class MaterialRegistViewController: BaseViewController {
         $0.autocorrectionType = .no
         $0.enablesReturnKeyAutomatically = true
         $0.clearButtonMode = .whileEditing
-        $0.addAction(UIAction{ action in self.editingAdditionButtonStatus()}, for: .editingChanged)
         $0.delegate = self
+        $0.addAction(UIAction{ [unowned self] action in self.editingAdditionButtonStatus() }, for: .editingChanged)
         
         let space = UIView()
         $0.leftView = space
@@ -108,7 +108,7 @@ final class MaterialRegistViewController: BaseViewController {
     private lazy var cancelButton: UIButton = {
         $0.configuration?.attributedTitle = .configureTitle(.cancel, size: 16, weight: .semibold)
         $0.configuration?.baseForegroundColor = .gray
-        $0.addAction(UIAction {action in self.dismissViewController(action)}, for: .touchUpInside)
+        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) }, for: .touchUpInside)
         return $0
     }(UIButton(configuration: .gray()))
     
@@ -117,8 +117,7 @@ final class MaterialRegistViewController: BaseViewController {
         $0.configuration?.baseForegroundColor = .white
         $0.configuration?.background.backgroundColor = .secondarySystemFill
         $0.isEnabled = false
-        
-        $0.addAction(UIAction { action in self.dismissViewController(action) }, for: .touchUpInside)
+        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) }, for: .touchUpInside)
         return $0
     }(UIButton(configuration: .filled()))
     
@@ -219,15 +218,6 @@ final class MaterialRegistViewController: BaseViewController {
             $0.height.equalTo(50)
         }
     }
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        debugPrint("viewDidLoad")
-    }
-    
-    deinit {
-        debugPrint("메모리할당해제")
-    }
 }
 
 // MARK: - ConfigureViewController
@@ -240,7 +230,7 @@ extension MaterialRegistViewController {
         }
     }
     
-    func editingAdditionButtonStatus() {
+    private func editingAdditionButtonStatus() {
         guard let text = materialNameTextField.text else { return }
         
         if text.isEmpty || material.image == nil { // 이미지를 선택하지 않았거나, 재료명을 입력하지 않으면 비활성화
