@@ -7,7 +7,12 @@
 
 import UIKit
 
-typealias NavigationStyle = NavigationRightBarStyle & NavigationLeftBarStyle
+typealias NavigationStyle = NavigationRightBarStyle & NavigationLeftBarStyle & NavigationBackButtonStyle
+
+// MARK: - Protocols
+protocol NavigationBackButtonStyle: AnyObject {
+    func backButtonItem(title: String, _ selector: Selector?, _ color: UIColor)
+}
 
 protocol NavigationRightBarStyle: AnyObject {
     func rightBarButtonItem(systemName: String, _ selector: Selector?, _ color: UIColor)
@@ -20,6 +25,17 @@ protocol NavigationLeftBarStyle: AnyObject {
     func leftBarButtonItem(resourceImage: ImageResource, _ selector: Selector?, _ color: UIColor)
     func leftBarButtonItem(imageName: String, _ selector: Selector?, _ color: UIColor)
 }
+
+
+// MARK: - Navigation BackButton
+extension NavigationBackButtonStyle where Self: UIViewController {
+    func backButtonItem(title: String = "", _ selector: Selector? = nil, _ color: UIColor = .black) {
+        let backButtonItem = UIBarButtonItem(title: "", style: .plain, target: self, action: selector)
+        backButtonItem.tintColor = color
+        navigationItem.backBarButtonItem = backButtonItem
+    }
+}
+
 
 // MARK: - Navigation RightBar
 extension NavigationRightBarStyle where Self: UIViewController {
