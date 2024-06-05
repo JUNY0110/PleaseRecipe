@@ -87,7 +87,7 @@ extension MaterialStorageViewController: Navigationable {
     }
     
     @objc func presentViewController() {
-        let vc = MaterialRegistViewController()
+        let vc = MaterialAdditionViewController()
         let navi = UINavigationController(rootViewController: vc)
         navi.modalPresentationStyle = .fullScreen
         present(navi, animated: true)
