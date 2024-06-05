@@ -241,6 +241,10 @@ extension MaterialRegistViewController {
             additionButton.configuration?.background.backgroundColor = .mainRed
         }
     }
+    
+    func configureMaterialName(_ name: String?) {
+        materialNameTextField.text = name
+    }
 }
 
 
@@ -384,7 +388,6 @@ extension MaterialRegistViewController: UITextFieldDelegate {
         // Question: TextField 또는 전체글자의 width로 판단할 수는 없을까?
         let max = 10
         guard let text = textField.text else { return true }
-        
         let current = text.count + string.count - range.length
         
         return current <= max
@@ -434,7 +437,8 @@ extension MaterialRegistViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MaterialCell.identifier, for: indexPath) as! MaterialCell
         
-        cell.configureCell(image: MaterialLiteral.allCases[indexPath.row].image)
+        cell.configureCell(image: MaterialLiteral.allCases[indexPath.row].image,
+                           pageType: .regist)
         
         return cell
     }
