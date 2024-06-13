@@ -16,7 +16,11 @@ final class MaterialRegistViewController: BaseViewController {
     private let time = TimeSection.allCases
     private var sectionRow = 0
     private var itemRow = 0
-    private var material: Material = .init(image: nil, name: "", registDate: Date(), useDate: Int.max, category: .식재료)
+    private var material: Material = .init(image: nil,
+                                           name: "",
+                                           registDate: nil,
+                                           useDate: Int.max,
+                                           category: .식재료)
     
     // MARK: - Views
     private let imageSelectionLabel: UILabel = {
@@ -108,7 +112,8 @@ final class MaterialRegistViewController: BaseViewController {
     private lazy var cancelButton: UIButton = {
         $0.configuration?.attributedTitle = .configureTitle(.cancel, size: 16, weight: .semibold)
         $0.configuration?.baseForegroundColor = .gray
-        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) }, for: .touchUpInside)
+        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) },
+                     for: .touchUpInside)
         return $0
     }(UIButton(configuration: .gray()))
     
@@ -117,7 +122,8 @@ final class MaterialRegistViewController: BaseViewController {
         $0.configuration?.baseForegroundColor = .white
         $0.configuration?.background.backgroundColor = .secondarySystemFill
         $0.isEnabled = false
-        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) }, for: .touchUpInside)
+        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) },
+                     for: .touchUpInside)
         return $0
     }(UIButton(configuration: .filled()))
     
