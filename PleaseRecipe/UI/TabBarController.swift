@@ -56,7 +56,7 @@ final class TabBarController: UITabBarController {
     }
     
     private func setTabBarItemColor(_ itemAppearance: UITabBarItemAppearance) {
-        itemAppearance.selected.iconColor = Color.mainRed
-        itemAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: Color.mainRed]
+        itemAppearance.selected.iconColor = .mainRed
+        itemAppearance.selected.titleTextAttributes = [NSAttributedString.Key.foregroundColor: UIColor.mainRed]
     }
 }
