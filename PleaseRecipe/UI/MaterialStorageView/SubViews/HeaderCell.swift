@@ -42,7 +42,7 @@ final class HeaderCell: UICollectionViewCell {
     
     // MARK: - Layout
     private func addSubviews() {
-        addSubview(headerLabel)
+        contentView.addSubview(headerLabel)
     }
     
     private func layout() {
