@@ -16,6 +16,14 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     
     static let sectionHeaderElementKind = "SectionHeaderElementKind"
     private var diffableDataSource: diffableDataSourceAlias!
+    private var snapshot: NSDiffableDataSourceSnapshot<분류, Item>!
+    private var isShowingFloating = false
+    private var selectedMaterials = [Item]() {
+        didSet {
+            configureFloatingStatus()
+        }
+    }
+    
     private var sections: [분류: [Item]] = [
         .채소: 채소.allCases.map { Item(name: $0.name, isSelected: false) },
         .과일: 과일.allCases.map { Item(name: $0.name, isSelected: false) },
@@ -37,6 +45,65 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     // MARK: - Views
     private var collectionView: UICollectionView!
     
+    private lazy var dimView: UIView = {
+        $0.backgroundColor = .white
+        $0.alpha = 0
+        $0.isUserInteractionEnabled = true
+        
+        let tappedGesture = UITapGestureRecognizer(target: self, action: #selector(closeFloating))
+        $0.addGestureRecognizer(tappedGesture)
+        return $0
+    }(UIView())
+    
+    private let vStackView: UIStackView = {
+        $0.axis = .vertical
+        $0.spacing = 16
+        return $0
+    }(UIStackView())
+    
+    private lazy var 보관레이어: FloatingHStack = {
+        $0.configureMainButton(systemName: .보관하기,
+                               backgroundColor: .secondarySystemFill)
+        $0.configureHStack(isEnabled: false)
+        $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
+        return $0
+    }(FloatingHStack())
+    
+    private lazy var emptyView: UIButton  = {
+        $0.configuration?.image = UIImage().withRenderingMode(.alwaysTemplate)
+        $0.configuration?.baseForegroundColor = .clear
+        $0.configuration?.background.backgroundColor = .clear
+        $0.configuration?.cornerStyle = .capsule
+        $0.configuration?.buttonSize = .large
+        return $0
+    }(UIButton(configuration: .plain()))
+    
+    private let 상온레이어: FloatingHStack = {
+        $0.configureHStack(.상온보관)
+        $0.configureSubButton(systemName: .상온보관,
+                              foregroundColor: .storageRed)
+        $0.isHidden = true
+        return $0
+    }(FloatingHStack())
+    
+    private let 냉장레이어: FloatingHStack = {
+        $0.configureHStack(.냉장보관)
+        $0.configureSubButton(systemName: .냉장보관,
+                              foregroundColor: .storageSkyBlue)
+        $0.isHidden = true
+        return $0
+    }(FloatingHStack())
+    
+    private let 냉동레이어: FloatingHStack = {
+        $0.configureHStack(.냉동보관)
+        $0.configureSubButton(systemName: .냉동보관,
+                              foregroundColor: .storageBlue)
+        $0.isHidden = true
+        return $0
+    }(FloatingHStack())
+    
+    private lazy var buttonLayers: [UIView] = [emptyView, 상온레이어, 냉장레이어, 냉동레이어]
+    
     private lazy var searchBar: CustomSearchBar = {
         $0.delegate = self
         return $0
@@ -49,10 +116,10 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.layer.borderColor = UIColor.secondarySystemBackground.cgColor
         $0.layer.borderWidth = 1
         $0.layer.cornerRadius = 0
-        $0.addAction(UIAction{[unowned self] action in self.moveToRegistViewController()}, for: .touchUpInside)
+        $0.addAction(UIAction { [unowned self] action in self.moveToRegistViewController() }, for: .touchUpInside)
         return $0
     }(UIButton(configuration: .plain()))
-
+    
     private let emptyTextLabel: UILabel = {
         $0.text = """
                   등록된 재료가 없습니다.
@@ -72,12 +139,9 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         
         configureNavigation()
         configureCollectionView()
-        
-        let headerRegistration = headerRegistration()
-        let cellRegistration = cellRegistration()
-        createDataSource(headerRegistration, cellRegistration)
+        createDataSource()
         performSnapshot()
-
+        
         shouldHiddenCollectionView(sections.values.isEmpty)
     }
     
@@ -86,6 +150,13 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     override func addSubviews() {
         view.addSubview(emptyTextLabel)
         view.addSubview(collectionView)
+        view.addSubview(dimView)
+        view.addSubview(vStackView) // StackView 특성을 활용해 자연스러운 애니메이션 적용을 하기 위함.
+        vStackView.addArrangedSubview(상온레이어)
+        vStackView.addArrangedSubview(냉장레이어)
+        vStackView.addArrangedSubview(냉동레이어)
+        vStackView.addArrangedSubview(emptyView) // 플로팅버튼(보관버튼) 뒤에 가려지는 버튼. 자연스러운 동작을 위해 추가
+        view.addSubview(보관레이어)
         view.addSubview(searchBar)
         view.addSubview(registButton)
     }
@@ -119,6 +190,21 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
             $0.right.equalTo(registButton.snp.left)
             $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
         }
+        
+        dimView.snp.makeConstraints {
+            $0.edges.equalTo(view.snp.edges)
+        }
+        
+        보관레이어.snp.makeConstraints {
+            $0.right.equalToSuperview().offset(-16)
+            $0.bottom.equalTo(searchBar.snp.top).offset(-16)
+        }
+        
+        vStackView.snp.makeConstraints {
+            $0.right.equalToSuperview().offset(-16)
+            $0.bottom.equalTo(보관레이어.snp.bottom).offset(-16)
+            $0.width.equalTo(보관레이어.snp.width)
+        }
     }
 }
 
@@ -139,10 +225,61 @@ extension MaterialAdditionViewController {
         dismiss(animated: true)
     }
     
+    private func controlFloating() {
+        if isShowingFloating { // 플로팅 닫기
+            closeFloating()
+        } else {
+            openFloating()          // 플로팅 열기
+        }
+    }
+    
+    @objc private func closeFloating() {
+        dimView.isUserInteractionEnabled = false // 추가 인터랙션 제한
+        isShowingFloating = false
+        
+        UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
+            self.보관레이어.configureMainButton(systemName: .보관하기)
+            self.보관레이어.configureHStack(isEnabled: true)
+        } completion: { _ in
+            self.buttonLayers.reversed().forEach { stack in
+                self.dimView.alpha = 0
+                
+                stack.alpha = 1
+                
+                UIView.animate(withDuration: 0.2) {
+                    stack.alpha = 0
+                    stack.isHidden = true
+                }
+            }
+            
+            self.dimView.isUserInteractionEnabled = true // 전체 애니메이션 이후 인터랙션 복구
+        }
+    }
+    
+    private func openFloating() {
+        isShowingFloating = true
+        
+        UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
+            self.보관레이어.configureMainButton(systemName: .취소)
+            self.보관레이어.configureHStack(.취소, isEnabled: true)
+        } completion: { _ in
+            self.buttonLayers.forEach { stack in
+                stack.alpha = 0
+                
+                UIView.animate(withDuration: 0.2) {
+                    stack.alpha = 1
+                    stack.isHidden = false
+                    self.dimView.alpha = 0.8
+                }
+            }
+        }
+    }
+    
     private func moveToRegistViewController() {
         let vc = MaterialRegistViewController()
         let text = searchBar.text
         vc.configureMaterialName(text)
+        
         navigationController?.pushViewController(vc, animated: true)
     }
     
@@ -153,6 +290,18 @@ extension MaterialAdditionViewController {
         } else {
             collectionView.isHidden = false
             emptyTextLabel.isHidden = true
+        }
+    }
+    
+    private func configureFloatingStatus() {
+        if selectedMaterials.isEmpty {
+            보관레이어.configureHStack(isEnabled: false)
+            보관레이어.configureMainButton(systemName: .보관하기,
+                                      backgroundColor: .secondarySystemFill)
+        } else {
+            보관레이어.configureHStack(isEnabled: true)
+            보관레이어.configureMainButton(systemName: .보관하기,
+                                      backgroundColor: .darkText)
         }
     }
 }
@@ -177,22 +326,10 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         
-        configureItem(of: indexPath, isSelected: false)
-    }
-    
-    private func configureItem(of indexPath: IndexPath, isSelected: Bool) {
-        let snapshot = diffableDataSource.snapshot()
-        let section = snapshot.sectionIdentifiers[indexPath.section]
-        let items = snapshot.itemIdentifiers(inSection: section)
-        let item = items[indexPath.item]
-        
-        guard let itemIndex = sections[section]?.firstIndex(where: {
-            $0.name == item.name
-        }) else { return }
-        
         sections[section]![itemIndex].isSelected = isSelected // 인덱스의 값이므로, 반드시 존재.
     }
 }
+
 
 // MARK: - Diffable CollectionView
 extension MaterialAdditionViewController: Compositionable {
@@ -205,21 +342,32 @@ extension MaterialAdditionViewController: Compositionable {
         collectionView.delegate = self
     }
     
-    private func createDataSource(
-        _ headerRegistration: UICollectionView.SupplementaryRegistration<HeaderCell>,
-        _ cellRegistration: UICollectionView.CellRegistration<MaterialCell, Item>
-    ) {
-        // cellForItem과 같은 역할
+    private func createDataSource() {
+        let cellRegistration = cellRegistration()
+        let headerRegistration = headerRegistration()
+        
+        // cellForRowAt과 같은 역할
         self.diffableDataSource = diffableDataSourceAlias(collectionView: collectionView, cellProvider: { collectionView, indexPath, material in
             
-            return collectionView.dequeueConfiguredReusableCell(using: cellRegistration,
-                                                                for: indexPath,
-                                                                item: material)
+            let cell = collectionView.dequeueConfiguredReusableCell(
+                using: cellRegistration,
+                for: indexPath,
+                item: material
+            )
+            
+            return cell
         })
         
-        self.diffableDataSource.supplementaryViewProvider = {
-            (collectionView: UICollectionView, kind: String, indexPath: IndexPath) -> UICollectionReusableView? in
-            let headerView = collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+        self.diffableDataSource.supplementaryViewProvider = {(
+            collectionView: UICollectionView,
+            kind: String,
+            indexPath: IndexPath
+        ) -> UICollectionReusableView? in
+            
+            let headerView = collectionView.dequeueConfiguredReusableSupplementary(
+                using: headerRegistration,
+                for: indexPath
+            )
             
             return headerView
         }
@@ -228,8 +376,8 @@ extension MaterialAdditionViewController: Compositionable {
     }
     
     private func performSnapshot(with searchText: String? = "") {
-        var snapshot = NSDiffableDataSourceSnapshot<분류, Item>()
-
+        snapshot = NSDiffableDataSourceSnapshot<분류, Item>()
+        
         for section in 분류.allCases {
             guard let items = sections[section] else { continue }
             
@@ -258,13 +406,13 @@ extension MaterialAdditionViewController {
     private func headerRegistration() -> UICollectionView.SupplementaryRegistration<HeaderCell>{
         return UICollectionView.SupplementaryRegistration<HeaderCell>(elementKind: Self.sectionHeaderElementKind){ [unowned self] headerView, elementKind, indexPath in
             
-            let headerItem = self.diffableDataSource.snapshot().sectionIdentifiers[indexPath.section]
+            let headerItem = snapshot.sectionIdentifiers[indexPath.section]
             headerView.configureCell(headerItem.name)
         }
     }
     
     private func cellRegistration() -> UICollectionView.CellRegistration<MaterialCell, Item>{
-        return UICollectionView.CellRegistration<MaterialCell, Item> { cell, indexPath, material in
+        return UICollectionView.CellRegistration<MaterialCell, Item> { [unowned self] cell, indexPath, material in
             
             cell.configureCell(image: nil,
                                name: material.name,
@@ -280,24 +428,25 @@ extension MaterialAdditionViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         var searchText = searchText.lowercased()                        // 대소문자 무시
         searchText = searchText.replacingOccurrences(of: " ", with: "") // 띄어쓰기 무시
+        
         performSnapshot(with: searchText)
     }
 }
 
 
 /*
-    ** 문제상황 **
-    1. diffableDataSource를 사용하면 보여지는 cell이 초기화되는 문제가 있다.
-        - diffableDataSource는 화면이 수정되는게 아니라면, 새로 그려낸다.
-        - 화면 상의 위치만 바뀐다면, 기존의 데이터를 사용한다.
-    2. 실제 cell의 isSelected가 초기화되는 것과는 다르다.
-        - cell의 isSelected는 유지된다. print(cell.isSelected)를 통해 확인
-        - 따라서, cell을 보여주는 것에서 유지되지 않는다.
-    
-    ** 해결 **
-    1. didSelectItemAt메서드의 indexPath를 통해 현재 선택한 cell의 정보 추출
-        (section -> items -> item)
-    2. cell의 item.name과 동일한 정보를 가진 데이터목록(sections)의 item을 찾는다.
-    3. 해당 아이템의 index정보를 이용해 sections에 isSelected 정보를 수정한다.
-    4. sections의 item정보를 이용해 화면이 새로 그려져도 선택한 정보는 유지된다.
+ ** 문제상황 **
+ 1. diffableDataSource를 사용하면 보여지는 cell이 초기화되는 문제가 있다.
+ - diffableDataSource는 화면이 수정되는게 아니라면, 새로 그려낸다.
+ - 화면 상의 위치만 바뀐다면, 기존의 데이터를 사용한다.
+ 2. 실제 cell의 isSelected가 초기화되는 것과는 다르다.
+ - cell의 isSelected는 유지된다. print(cell.isSelected)를 통해 확인
+ - 따라서, cell을 보여주는 것에서 유지되지 않는다.
+ 
+ ** 해결 **
+ 1. didSelectItemAt메서드의 indexPath를 통해 현재 선택한 cell의 정보 추출
+ (section -> items -> item)
+ 2. cell의 item.name과 동일한 정보를 가진 데이터목록(sections)의 item을 찾는다.
+ 3. 해당 아이템의 index정보를 이용해 sections에 isSelected 정보를 수정한다.
+ 4. sections의 item정보를 이용해 화면이 새로 그려져도 선택한 정보는 유지된다.
  */
