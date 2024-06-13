@@ -264,7 +264,7 @@ extension MaterialRegistViewController {
             pressedCancelButton()
         }
         
-        dismiss(animated: true)
+        navigationController?.popViewController(animated: true)
     }
     
     private func pressedCancelButton() {
