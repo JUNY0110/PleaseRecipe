@@ -322,6 +322,7 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
             sections[sectionId]![itemId].isSelected = true
+            selectedMaterials.append(sections[sectionId]![itemId])
         }
     }
     
@@ -330,6 +331,7 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
             sections[sectionId]![itemId].isSelected = false
+            selectedMaterials.removeAll(where: {$0.name == sections[sectionId]![itemId].name})
         }
     }
 }
