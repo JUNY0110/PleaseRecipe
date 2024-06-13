@@ -37,8 +37,8 @@ final class MaterialCell: UICollectionViewCell {
     }
     
     override var isSelected: Bool {
-        didSet {
-            configureSelected(isSelected)
+        willSet {
+            configureSelected(newValue)
         }
     }
     
@@ -87,9 +87,9 @@ final class MaterialCell: UICollectionViewCell {
     
     // MARK: - Attribute
     private func attribute() {
-        self.layer.cornerRadius = 8
-        self.layer.borderColor = UIColor.secondarySystemBackground.cgColor
-        self.layer.borderWidth = 1
+        self.contentView.layer.cornerRadius = 8
+        self.contentView.layer.borderColor = UIColor.secondarySystemBackground.cgColor
+        self.contentView.layer.borderWidth = 1
     }
     
     // MARK: - Layout
@@ -114,15 +114,19 @@ extension MaterialCell {
         self.pageType = pageType
     }
     
-    func configureSelected(_ selected: Bool) {
-        if selected {
-            layer.borderColor = UIColor.mainRed.cgColor
-            layer.borderWidth = 3
-            
+    func configureSelected(_ isSelected: Bool) {
+        if isSelected {
+            UIView.animate(withDuration: 0.1, delay: .zero, options: .curveEaseInOut) {
+                self.contentView.layer.borderColor = UIColor.mainRed.cgColor
+                self.contentView.layer.borderWidth = 2
+            }
+
             image = imageView.image
         } else {
-            layer.borderColor = UIColor.secondarySystemBackground.cgColor
-            layer.borderWidth = 1
+            UIView.animate(withDuration: 0.1, delay: .zero, options: .curveEaseInOut) {
+                self.contentView.layer.borderColor = UIColor.secondarySystemBackground.cgColor
+                self.contentView.layer.borderWidth = 1
+            }
         }
     }
 }
