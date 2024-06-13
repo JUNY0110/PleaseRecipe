@@ -320,13 +320,17 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .init())
         
-        configureItem(of: indexPath, isSelected: true)
+        if let (sectionId, itemId) = self.findIndex(indexPath) {
+            sections[sectionId]![itemId].isSelected = true
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
         
-        sections[section]![itemIndex].isSelected = isSelected // 인덱스의 값이므로, 반드시 존재.
+        if let (sectionId, itemId) = self.findIndex(indexPath) {
+            sections[sectionId]![itemId].isSelected = false
+        }
     }
 }
 
@@ -418,8 +422,23 @@ extension MaterialAdditionViewController {
                                name: material.name,
                                pageType: .addtion)
             
-            cell.configureSelected(material.isSelected)
+            DispatchQueue.main.async {
+                if let (sectionId, itemId) = self.findIndex(indexPath) {
+                    let isSelected = self.sections[sectionId]![itemId].isSelected
+                    cell.configureSelected(isSelected)
+                }
+            }
         }
+    }
+    
+    private func findIndex(_ indexPath: IndexPath) -> (sectionId: 분류, itemId: Int)? {
+        let sectionId = snapshot.sectionIdentifiers[indexPath.section]
+        let items = snapshot.itemIdentifiers(inSection: sectionId)
+        let item = items[indexPath.item]
+        
+        guard let itemId = self.sections[sectionId]?.firstIndex(where: { $0.name == item.name }) else { return nil }
+        
+        return (sectionId, itemId)
     }
 }
 
