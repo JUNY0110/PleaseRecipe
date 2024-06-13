@@ -66,6 +66,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(UILabel())
     
     // MARK: - Attribute
+    @available(*, unavailable)
     override func attribute() {
         super.attribute()
         
@@ -81,6 +82,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }
     
     // MARK: - Layout
+    @available(*, unavailable)
     override func addSubviews() {
         view.addSubview(emptyTextLabel)
         view.addSubview(collectionView)
@@ -88,6 +90,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         view.addSubview(registButton)
     }
     
+    @available(*, unavailable)
     override func layout() {
         let searchBarHeight = 50
         

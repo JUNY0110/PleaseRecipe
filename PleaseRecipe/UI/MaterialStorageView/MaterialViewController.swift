@@ -18,6 +18,7 @@ final class MaterialViewController: BaseViewController {
     private var collectionView: UICollectionView!
     
     // MARK: - Attribute
+    @available(*, unavailable)
     override func attribute() {
         super.attribute()
         
@@ -29,10 +30,12 @@ final class MaterialViewController: BaseViewController {
     }
     
     // MARK: - Layout
+    @available(*, unavailable)
     override func addSubviews() {
         view.addSubview(collectionView)
     }
     
+    @available(*, unavailable)
     override func layout() {
         collectionView.snp.makeConstraints {
             $0.edges.equalTo(view.safeAreaLayoutGuide)

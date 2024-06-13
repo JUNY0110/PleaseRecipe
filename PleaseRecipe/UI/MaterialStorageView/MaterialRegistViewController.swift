@@ -136,6 +136,7 @@ final class MaterialRegistViewController: BaseViewController {
     }
     
     // MARK: - Layout
+    @available(*, unavailable)
     override func addSubviews() {
         view.addSubview(imageSelectionLabel)
         view.addSubview(collectionView)
@@ -150,6 +151,7 @@ final class MaterialRegistViewController: BaseViewController {
         view.addSubview(additionButton)
     }
     
+    @available(*, unavailable)
     override func layout() {
         imageSelectionLabel.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)

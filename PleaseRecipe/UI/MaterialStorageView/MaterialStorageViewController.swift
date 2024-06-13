@@ -48,6 +48,7 @@ final class MaterialStorageViewController: BaseViewController {
     private let 상온보관재료 = MaterialViewController()
     
     // MARK: - Attribute
+    @available(*, unavailable)
     override func attribute() {
         super.attribute()
         
@@ -55,12 +56,14 @@ final class MaterialStorageViewController: BaseViewController {
     }
     
     // MARK: - Layout
+    @available(*, unavailable)
     override func addSubviews() {
         view.addSubview(segmentedControl)
         view.addSubview(containerView)
         containerView.addSubview(pageViewController.view)
     }
     
+    @available(*, unavailable)
     override func layout() {
         segmentedControl.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
