@@ -62,9 +62,10 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(UIStackView())
     
     private lazy var 보관레이어: FloatingHStack = {
+        $0.configureLabel(.보관하기)
+        $0.configureIsEnabled(isEnabled: false)
         $0.configureMainButton(systemName: .보관하기,
                                backgroundColor: .secondarySystemFill)
-        $0.configureHStack(isEnabled: false)
         $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
         return $0
     }(FloatingHStack())
@@ -79,7 +80,8 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(UIButton(configuration: .plain()))
     
     private let 상온레이어: FloatingHStack = {
-        $0.configureHStack(.상온보관)
+        $0.configureLabel(.상온보관)
+        $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .상온보관,
                               foregroundColor: .storageRed)
         $0.isHidden = true
@@ -87,7 +89,8 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(FloatingHStack())
     
     private let 냉장레이어: FloatingHStack = {
-        $0.configureHStack(.냉장보관)
+        $0.configureLabel(.냉장보관)
+        $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .냉장보관,
                               foregroundColor: .storageSkyBlue)
         $0.isHidden = true
@@ -95,7 +98,8 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(FloatingHStack())
     
     private let 냉동레이어: FloatingHStack = {
-        $0.configureHStack(.냉동보관)
+        $0.configureLabel(.냉동보관)
+        $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .냉동보관,
                               foregroundColor: .storageBlue)
         $0.isHidden = true
@@ -150,13 +154,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     override func addSubviews() {
         view.addSubview(emptyTextLabel)
         view.addSubview(collectionView)
-        view.addSubview(dimView)
-        view.addSubview(vStackView) // StackView 특성을 활용해 자연스러운 애니메이션 적용을 하기 위함.
-        vStackView.addArrangedSubview(상온레이어)
-        vStackView.addArrangedSubview(냉장레이어)
-        vStackView.addArrangedSubview(냉동레이어)
-        vStackView.addArrangedSubview(emptyView) // 플로팅버튼(보관버튼) 뒤에 가려지는 버튼. 자연스러운 동작을 위해 추가
-        view.addSubview(보관레이어)
         view.addSubview(searchBar)
         view.addSubview(registButton)
     }
@@ -239,7 +236,6 @@ extension MaterialAdditionViewController {
         
         UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
             self.보관레이어.configureMainButton(systemName: .보관하기)
-            self.보관레이어.configureHStack(isEnabled: true)
         } completion: { _ in
             self.buttonLayers.reversed().forEach { stack in
                 self.dimView.alpha = 0
@@ -249,8 +245,10 @@ extension MaterialAdditionViewController {
                 UIView.animate(withDuration: 0.2) {
                     stack.alpha = 0
                     stack.isHidden = true
+            self.보관레이어.configureLabel(.보관하기)
                     stack.spacing = 10
                         stack.spacing = 0
+                            stack.configureIsEnabled(isEnabled: false)
                 }
             }
             
@@ -263,7 +261,6 @@ extension MaterialAdditionViewController {
         
         UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
             self.보관레이어.configureMainButton(systemName: .취소)
-            self.보관레이어.configureHStack(.취소, isEnabled: true)
         } completion: { _ in
             self.buttonLayers.forEach { stack in
                 stack.alpha = 0
@@ -272,7 +269,9 @@ extension MaterialAdditionViewController {
                     stack.alpha = 1
                     stack.isHidden = false
                     self.dimView.alpha = 0.8
+            self.보관레이어.configureLabel(.취소)
                     stack.spacing = 0
+                    stack.configureIsEnabled(isEnabled: true)
                         stack.spacing = 10
                 }
             }
@@ -299,11 +298,11 @@ extension MaterialAdditionViewController {
     
     private func configureFloatingStatus() {
         if selectedMaterials.isEmpty {
-            보관레이어.configureHStack(isEnabled: false)
+            보관레이어.configureIsEnabled(isEnabled: false)
             보관레이어.configureMainButton(systemName: .보관하기,
                                       backgroundColor: .secondarySystemFill)
         } else {
-            보관레이어.configureHStack(isEnabled: true)
+            보관레이어.configureIsEnabled(isEnabled: true)
             보관레이어.configureMainButton(systemName: .보관하기,
                                       backgroundColor: .darkText)
         }

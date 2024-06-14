@@ -13,8 +13,8 @@ final class FloatingHStack: UIStackView {
     
     // MARK: - Views
     private let label: UILabel = {
-        $0.text = "상온보관"
-        $0.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        $0.text = ""
+        $0.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         $0.textAlignment = .right
         return $0
     }(UILabel())
@@ -50,10 +50,16 @@ final class FloatingHStack: UIStackView {
     private func layout() {
         button.setContentHuggingPriority(.defaultHigh, for: .horizontal)
     }
-    
-    // MARK: - Configure
-    func configureHStack(_ buttonStyle: FloatingButtonStyle = .보관하기, isEnabled: Bool = true) {
+}
+
+
+// MARK: - Configure
+extension FloatingHStack {
+    func configureLabel(_ buttonStyle: FloatingButtonStyle) {
         label.text = buttonStyle.text
+    }
+    
+    func configureIsEnabled(isEnabled: Bool = true) {
         button.isEnabled = isEnabled
     }
     
@@ -62,7 +68,7 @@ final class FloatingHStack: UIStackView {
         foregroundColor: UIColor = .white,
         backgroundColor: UIColor = .darkText
     ) {
-        button.configureMainButton(
+        button.configureButton(
             systemName: systemName.imageName,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor
@@ -74,18 +80,22 @@ final class FloatingHStack: UIStackView {
         foregroundColor: UIColor,
         backgroundColor: UIColor = .white
     ) {
-        button.configureSubButton(
+        button.configureButton(
             systemName: systemName.imageName,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor
         )
     }
-    
+}
+
+// MARK: - Methods
+extension FloatingHStack {
     func addButtonAction(_ action: UIAction) {
         button.addAction(action, for: .touchUpInside)
     }
 }
 
+// MARK: - Nested Types
 extension FloatingHStack {
     enum FloatingButtonStyle {
         case 냉동보관
