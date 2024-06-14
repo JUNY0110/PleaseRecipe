@@ -128,6 +128,7 @@ final class MaterialRegistViewController: BaseViewController {
     }(UIButton(configuration: .filled()))
     
     // MARK: - Attribute
+    @available(*, unavailable)
     override func attribute() {
         super.attribute()
         
@@ -426,13 +427,13 @@ extension MaterialRegistViewController: UICollectionViewDelegateFlowLayout {
         material.image = cell.image
         
         editingAdditionButtonStatus()
-        // override isSelected는 일반적으로 직접 조작하지 않고, 이와같이 간접적으로 다룰 수 있다.
+        // override isSelected는 일반적으로 직접 조작하지 않고, 이와같이 간접적으로 다루는 것을 권장한다.
         // 단순하게 indexPath의 cell에 대한 설정을 부여할 경우, didSelectItemAt만으로는 Cell의 isSelected를 인지하지 못하므로, isSelected를 조작하는 메서드를 사용해줘야 함.
         // cell에 대한 직접적인 조작은 cell에서 하자. 코드 가독성에서도 유용하다.
     }
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        collectionView.deselectItem(at: indexPath, animated: true)                        // 다른 이미지 선택 시 isSelected = false
+        collectionView.deselectItem(at: indexPath, animated: true)  // 다른 이미지 선택 시 isSelected = false
     }
 }
 
