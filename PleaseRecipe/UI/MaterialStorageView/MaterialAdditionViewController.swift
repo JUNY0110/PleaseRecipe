@@ -249,6 +249,8 @@ extension MaterialAdditionViewController {
                 UIView.animate(withDuration: 0.2) {
                     stack.alpha = 0
                     stack.isHidden = true
+                    stack.spacing = 10
+                        stack.spacing = 0
                 }
             }
             
@@ -270,6 +272,8 @@ extension MaterialAdditionViewController {
                     stack.alpha = 1
                     stack.isHidden = false
                     self.dimView.alpha = 0.8
+                    stack.spacing = 0
+                        stack.spacing = 10
                 }
             }
         }

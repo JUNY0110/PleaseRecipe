@@ -39,8 +39,6 @@ final class FloatingHStack: UIStackView {
     // MARK: - Attribute
     private func attribute() {
         axis = .horizontal
-        spacing = 10
-        
     }
     
     // MARK: - Layout
