@@ -215,57 +215,77 @@ extension MaterialAdditionViewController {
     }
     
     private func controlFloating() {
-        if isShowingFloating { // 플로팅 닫기
-            closeFloating()
+        if isShowingFloating {
+            closeFloating()    // 플로팅 닫기
         } else {
-            openFloating()          // 플로팅 열기
+            openFloating()     // 플로팅 열기
         }
     }
     
-    @objc private func closeFloating() {
+    @objc private func closeFloating() {  // dim 인터렉션 비활성화 -> 메인버튼(보관레이어) 트랜지션 -> 서브버튼 숨김 애니메이션
         dimView.isUserInteractionEnabled = false // 추가 인터랙션 제한
-        isShowingFloating = false
         
         UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
             self.보관레이어.configureMainButton(systemName: .보관하기)
-        } completion: { _ in
-            self.buttonLayers.reversed().forEach { stack in
-                self.dimView.alpha = 0
-                
-                stack.alpha = 1
-                
-                UIView.animate(withDuration: 0.2) {
-                    stack.alpha = 0
-                    stack.isHidden = true
             self.보관레이어.configureLabel(.보관하기)
+        } completion: { status in
+            switch status {
+            case true:
+                for i in self.floatingLayers.indices.reversed()  {
+                    let stack = self.floatingLayers[i]
+                    
+                    self.dimView.alpha = 0
+                    stack.alpha = 1
                     stack.spacing = 10
+                    
+                    UIView.animate(withDuration: 0.2) { // Floating 버튼 사라지는 애니메이션
                         stack.spacing = 0
+                        
+                        if i != 0 { // 보관레이어는 동작에서 제외
+                            stack.alpha = 0
+                            stack.isHidden = true
                             stack.configureIsEnabled(isEnabled: false)
+                        }
+                    }
                 }
+                
+                self.isShowingFloating = false // 플로팅이 완전히 사라졌을 때, false로 변환
+            case false:
+                // TODO: 알림창 띄우는 기능 필요
+                debugPrint("알 수 없는 에러가 발생했습니다. 다시 시도해주세요")
+                break
             }
-            
-            self.dimView.isUserInteractionEnabled = true // 전체 애니메이션 이후 인터랙션 복구
         }
     }
     
-    private func openFloating() {
-        isShowingFloating = true
-        
+    private func openFloating() { // 메인버튼(보관레이어) 트랜지션 -> 서브버튼 등장 애니메이션 -> dim 인터렉션 활성화, 햅틱 반응
         UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
             self.보관레이어.configureMainButton(systemName: .취소)
-        } completion: { _ in
-            self.buttonLayers.forEach { stack in
-                stack.alpha = 0
-                
-                UIView.animate(withDuration: 0.2) {
-                    stack.alpha = 1
-                    stack.isHidden = false
-                    self.dimView.alpha = 0.8
             self.보관레이어.configureLabel(.취소)
+        } completion: { status in
+            switch status {
+            case true:
+                for i in self.floatingLayers.indices {
+                    let stack = self.floatingLayers[i]
+                    stack.alpha = (i == 0) ? 1 : 0 // 보관레이어는 동작에서 제외
                     stack.spacing = 0
                     stack.configureIsEnabled(isEnabled: true)
+                    
+                    UIView.animate(withDuration: 0.2) { // Floating 버튼 등장 애니메이션
+                        stack.alpha = 1
                         stack.spacing = 10
+                        stack.isHidden = false
+                        
+                        self.dimView.alpha = 0.8
+                    }
                 }
+                
+                self.isShowingFloating = true                // 플로팅이 완전히 등장했을 때, true로 변환
+                self.dimView.isUserInteractionEnabled = true // 전체 애니메이션 이후 인터랙션 사용
+            case false:
+                // TODO: 알림창 띄우는 기능 필요
+                debugPrint("알 수 없는 에러가 발생했습니다. 다시 시도해주세요")
+                break
             }
         }
     }
