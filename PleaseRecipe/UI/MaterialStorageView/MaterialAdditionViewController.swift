@@ -282,12 +282,21 @@ extension MaterialAdditionViewController {
                 
                 self.isShowingFloating = true                // 플로팅이 완전히 등장했을 때, true로 변환
                 self.dimView.isUserInteractionEnabled = true // 전체 애니메이션 이후 인터랙션 사용
+                self.generateHapticFeedback()                // 완전히 등장했다는 의미의 햅틱
             case false:
                 // TODO: 알림창 띄우는 기능 필요
                 debugPrint("알 수 없는 에러가 발생했습니다. 다시 시도해주세요")
                 break
             }
         }
+    }
+    
+    private func generateHapticFeedback() {
+        // 성공적으로 Floating동작을 수행했음을 알리기 위한 햅틱
+        let style = UIImpactFeedbackGenerator.FeedbackStyle.light
+        let generator = UIImpactFeedbackGenerator(style: style)
+        generator.prepare()
+        generator.impactOccurred()
     }
     
     private func moveToRegistViewController() {
