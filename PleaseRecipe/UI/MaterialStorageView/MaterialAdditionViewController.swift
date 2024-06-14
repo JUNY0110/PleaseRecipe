@@ -43,6 +43,19 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }
     
     // MARK: - Views
+    
+    private let emptyTextLabel: UILabel = {
+        $0.text = """
+                  등록된 재료가 없습니다.
+                  재료를 등록해주세요!
+                  """
+        $0.textAlignment = .center
+        $0.textColor = .placeholderText
+        $0.font = UIFont.systemFont(ofSize: 20, weight: .bold)
+        $0.numberOfLines = 2
+        return $0
+    }(UILabel())
+    
     private var collectionView: UICollectionView!
     
     private lazy var dimView: UIView = {
@@ -55,7 +68,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         return $0
     }(UIView())
     
-    private let vStackView: UIStackView = {
+    private let vFloatingStackView: UIStackView = {
         $0.axis = .vertical
         $0.spacing = 16
         return $0
@@ -69,15 +82,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
         return $0
     }(FloatingHStack())
-    
-    private lazy var emptyView: UIButton  = {
-        $0.configuration?.image = UIImage().withRenderingMode(.alwaysTemplate)
-        $0.configuration?.baseForegroundColor = .clear
-        $0.configuration?.background.backgroundColor = .clear
-        $0.configuration?.cornerStyle = .capsule
-        $0.configuration?.buttonSize = .large
-        return $0
-    }(UIButton(configuration: .plain()))
     
     private let 상온레이어: FloatingHStack = {
         $0.configureLabel(.상온보관)
@@ -106,7 +110,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         return $0
     }(FloatingHStack())
     
-    private lazy var buttonLayers: [UIView] = [emptyView, 상온레이어, 냉장레이어, 냉동레이어]
+    private lazy var floatingLayers: [FloatingHStack] = [보관레이어, 상온레이어, 냉장레이어, 냉동레이어]
     
     private lazy var searchBar: CustomSearchBar = {
         $0.delegate = self
@@ -123,18 +127,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.addAction(UIAction { [unowned self] action in self.moveToRegistViewController() }, for: .touchUpInside)
         return $0
     }(UIButton(configuration: .plain()))
-    
-    private let emptyTextLabel: UILabel = {
-        $0.text = """
-                  등록된 재료가 없습니다.
-                  재료를 등록해주세요!
-                  """
-        $0.textAlignment = .center
-        $0.textColor = .placeholderText
-        $0.font = UIFont.systemFont(ofSize: 20, weight: .bold)
-        $0.numberOfLines = 2
-        return $0
-    }(UILabel())
     
     // MARK: - Attribute
     @available(*, unavailable)
@@ -156,6 +148,12 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         view.addSubview(collectionView)
         view.addSubview(searchBar)
         view.addSubview(registButton)
+        view.addSubview(dimView)
+        view.addSubview(vFloatingStackView) // StackView 특성을 활용해 자연스러운 애니메이션 적용을 하기 위함.
+        vFloatingStackView.addArrangedSubview(상온레이어)
+        vFloatingStackView.addArrangedSubview(냉장레이어)
+        vFloatingStackView.addArrangedSubview(냉동레이어)
+        vFloatingStackView.addArrangedSubview(보관레이어)
     }
     
     @available(*, unavailable)
@@ -171,36 +169,30 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         collectionView.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide)
-            $0.bottom.equalTo(view.safeAreaLayoutGuide).offset(-searchBarHeight) // searchBar 높이만큼 올리기
-        }
-        
-        registButton.snp.makeConstraints {
-            $0.height.equalTo(searchBarHeight)
-            $0.right.equalTo(view.safeAreaLayoutGuide)
-            $0.width.equalTo(100)
-            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide).offset(-searchBarHeight)
         }
         
         searchBar.snp.makeConstraints {
             $0.height.equalTo(searchBarHeight)
             $0.left.equalTo(view.safeAreaLayoutGuide)
-            $0.right.equalTo(registButton.snp.left)
             $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+        }
+        
+        registButton.snp.makeConstraints {
+            $0.height.equalTo(searchBarHeight)
+            $0.left.equalTo(searchBar.snp.right)
+            $0.right.equalTo(view.safeAreaLayoutGuide)
+            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+            $0.width.equalTo(100)
         }
         
         dimView.snp.makeConstraints {
             $0.edges.equalTo(view.snp.edges)
         }
-        
-        보관레이어.snp.makeConstraints {
-            $0.right.equalToSuperview().offset(-16)
+
+        vFloatingStackView.snp.makeConstraints {
+            $0.right.equalTo(view.safeAreaLayoutGuide).offset(-16)
             $0.bottom.equalTo(searchBar.snp.top).offset(-16)
-        }
-        
-        vStackView.snp.makeConstraints {
-            $0.right.equalToSuperview().offset(-16)
-            $0.bottom.equalTo(보관레이어.snp.bottom).offset(-16)
-            $0.width.equalTo(보관레이어.snp.width)
         }
     }
 }
