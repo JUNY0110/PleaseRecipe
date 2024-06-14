@@ -8,6 +8,8 @@
 import UIKit
 
 final class CustomTextField: UITextField {
+    
+    // 붙여놓기 금지 설정
     override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
         if action == #selector(UIResponderStandardEditActions.paste(_:)) {
             return false
