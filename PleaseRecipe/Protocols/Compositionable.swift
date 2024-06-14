@@ -65,7 +65,7 @@ extension Compositionable where Self: UIViewController {
                                                                         alignment: .top)
         section.boundarySupplementaryItems = [sectionHeader]
         
-        var layout = UICollectionViewCompositionalLayout(section: section)
+        let layout = UICollectionViewCompositionalLayout(section: section)
         
         return layout
     }
@@ -84,9 +84,18 @@ extension Compositionable {
         // 가로를 기준으로 하나의 그룹으로 묶고,높이를 통일함.
         let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
                                                heightDimension: .absolute(height))
-        let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
+        let group: NSCollectionLayoutGroup
+        
+        if #available(iOS 16.0, *) {
+            group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
                                                        repeatingSubitem: repeatingSubitem,
                                                        count: Int(count))
+        } else {
+            // Fallback on earlier versions
+            group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
+                                                       subitem: repeatingSubitem,
+                                                       count: Int(count))
+        }
         group.interItemSpacing = .fixed(interItemSpacing) // 아이템 그룹 내 좌우 아이템 사이 여백
         
         return group
