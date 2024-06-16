@@ -47,11 +47,11 @@ final class TabBarController: UITabBarController {
     
     private func setupItemImage() {
         guard let items = tabBar.items else { return }
-        let imageNames = ["refrigerator", "frying.pan", "cart"]
+        let imageNames = ["refrigerator", "recipe", "cart"]
         
         for i in 0..<imageNames.count {
             let imageName = imageNames[i]
-            items[i].image = UIImage(systemName: imageName)
+            items[i].image = UIImage(resource: ImageResource(name: imageName, bundle: .main)).resize(newWidth: 22)
         }
     }
     
