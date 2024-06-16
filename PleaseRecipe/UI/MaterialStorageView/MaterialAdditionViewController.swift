@@ -487,21 +487,3 @@ extension MaterialAdditionViewController: UISearchBarDelegate {
         performSnapshot(with: searchText)
     }
 }
-
-
-/*
- ** 문제상황 **
- 1. diffableDataSource를 사용하면 보여지는 cell이 초기화되는 문제가 있다.
- - diffableDataSource는 화면이 수정되는게 아니라면, 새로 그려낸다.
- - 화면 상의 위치만 바뀐다면, 기존의 데이터를 사용한다.
- 2. 실제 cell의 isSelected가 초기화되는 것과는 다르다.
- - cell의 isSelected는 유지된다. print(cell.isSelected)를 통해 확인
- - 따라서, cell을 보여주는 것에서 유지되지 않는다.
- 
- ** 해결 **
- 1. didSelectItemAt메서드의 indexPath를 통해 현재 선택한 cell의 정보 추출
- (section -> items -> item)
- 2. cell의 item.name과 동일한 정보를 가진 데이터목록(sections)의 item을 찾는다.
- 3. 해당 아이템의 index정보를 이용해 sections에 isSelected 정보를 수정한다.
- 4. sections의 item정보를 이용해 화면이 새로 그려져도 선택한 정보는 유지된다.
- */
