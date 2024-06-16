@@ -19,7 +19,7 @@ final class FloatingHStack: UIStackView {
         return $0
     }(UILabel())
     
-    private let button = FloatingButton()
+    let button = FloatingButton()
     
     // MARK: - Init
     override init(frame: CGRect) {
@@ -39,6 +39,7 @@ final class FloatingHStack: UIStackView {
     // MARK: - Attribute
     private func attribute() {
         axis = .horizontal
+        isHidden = true
     }
     
     // MARK: - Layout
@@ -55,8 +56,12 @@ final class FloatingHStack: UIStackView {
 
 // MARK: - Configure
 extension FloatingHStack {
-    func configureLabel(_ buttonStyle: FloatingButtonStyle) {
-        label.text = buttonStyle.text
+    func configureLabel(
+        _ buttonStyle: FloatingButtonStyle? = nil,
+        isHidden: Bool = true
+    ) {
+        label.text = buttonStyle?.text ?? label.text // 버튼 최초 사용 시, 레이블 이름 저장 필요.
+        label.isHidden = isHidden
     }
     
     func configureIsEnabled(isEnabled: Bool = true) {

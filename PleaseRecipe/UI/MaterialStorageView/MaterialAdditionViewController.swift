@@ -75,10 +75,11 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(UIStackView())
     
     private lazy var 보관레이어: FloatingHStack = {
-        $0.configureLabel(.보관하기)
+        $0.configureLabel(.취소)
         $0.configureIsEnabled(isEnabled: false)
         $0.configureMainButton(systemName: .보관하기,
                                backgroundColor: .secondarySystemFill)
+        $0.isHidden = false
         $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
         return $0
     }(FloatingHStack())
@@ -88,7 +89,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .상온보관,
                               foregroundColor: .storageRed)
-        $0.isHidden = true
         return $0
     }(FloatingHStack())
     
@@ -97,7 +97,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .냉장보관,
                               foregroundColor: .storageSkyBlue)
-        $0.isHidden = true
         return $0
     }(FloatingHStack())
     
@@ -106,11 +105,10 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(systemName: .냉동보관,
                               foregroundColor: .storageBlue)
-        $0.isHidden = true
         return $0
     }(FloatingHStack())
     
-    private lazy var floatingLayers: [FloatingHStack] = [보관레이어, 상온레이어, 냉장레이어, 냉동레이어]
+    private lazy var floatingLayers: [FloatingHStack] = [보관레이어, 냉동레이어, 상온레이어, 냉장레이어]
     
     private lazy var searchBar: CustomSearchBar = {
         $0.delegate = self
@@ -202,6 +200,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
 extension MaterialAdditionViewController {
     private func configureNavigation() {
         navigationItem.title = "식재료 찾기"
+        
         backButtonItem()
         rightBarButtonItem(systemName: "xmark", #selector(dismissViewController))
     }
@@ -225,11 +224,14 @@ extension MaterialAdditionViewController {
     @objc private func closeFloating() {  // dim 인터렉션 비활성화 -> 메인버튼(보관레이어) 트랜지션 -> 서브버튼 숨김 애니메이션
         dimView.isUserInteractionEnabled = false // 추가 인터랙션 제한
         
-        UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
+        UIView.transition(
+            with: 보관레이어.button,
+            duration: 0.15,
+            options: .transitionFlipFromLeft
+        ) {
             self.보관레이어.configureMainButton(systemName: .보관하기)
-            self.보관레이어.configureLabel(.보관하기)
-        } completion: { status in
-            switch status {
+        } completion: { finished in
+            switch finished {
             case true:
                 for i in self.floatingLayers.indices.reversed()  {
                     let stack = self.floatingLayers[i]
@@ -240,10 +242,11 @@ extension MaterialAdditionViewController {
                     
                     UIView.animate(withDuration: 0.2) { // Floating 버튼 사라지는 애니메이션
                         stack.spacing = 0
+                        stack.configureLabel(isHidden: true) // 모든 레이블 숨기는 동작
                         
-                        if i != 0 { // 보관레이어는 동작에서 제외
-                            stack.alpha = 0
-                            stack.isHidden = true
+                        if i != 0 {                          // 보관레이어는 동작에서 제외
+                            stack.alpha = 0                  // 자연스럽게 사라지기 위한 설정
+                            stack.isHidden = true            // 플로팅 버튼 숨기는 동작
                             stack.configureIsEnabled(isEnabled: false)
                         }
                     }
@@ -259,11 +262,14 @@ extension MaterialAdditionViewController {
     }
     
     private func openFloating() { // 메인버튼(보관레이어) 트랜지션 -> 서브버튼 등장 애니메이션 -> dim 인터렉션 활성화, 햅틱 반응
-        UIView.transition(with: 보관레이어, duration: 0.15, options: .transitionFlipFromLeft) {
+        UIView.transition(
+            with: 보관레이어.button,
+            duration: 0.15,
+            options: .transitionFlipFromLeft
+        ) {
             self.보관레이어.configureMainButton(systemName: .취소)
-            self.보관레이어.configureLabel(.취소)
-        } completion: { status in
-            switch status {
+        } completion: { finished in
+            switch finished {
             case true:
                 for i in self.floatingLayers.indices {
                     let stack = self.floatingLayers[i]
@@ -272,11 +278,13 @@ extension MaterialAdditionViewController {
                     stack.configureIsEnabled(isEnabled: true)
                     
                     UIView.animate(withDuration: 0.2) { // Floating 버튼 등장 애니메이션
-                        stack.alpha = 1
-                        stack.spacing = 10
-                        stack.isHidden = false
-                        
                         self.dimView.alpha = 0.8
+                        
+                        stack.alpha = 1        // 자연스럽게 등장하기 위한 설정
+                        stack.spacing = 10
+                        stack.isHidden = false // 레이어가 등장하면서
+                        
+                        stack.configureLabel(isHidden: false) // 레이블이 등장하는 애니메이션
                     }
                 }
                 
@@ -444,9 +452,11 @@ extension MaterialAdditionViewController {
     private func cellRegistration() -> UICollectionView.CellRegistration<MaterialCell, Item>{
         return UICollectionView.CellRegistration<MaterialCell, Item> { [unowned self] cell, indexPath, material in
             
-            cell.configureCell(image: nil,
-                               name: material.name,
-                               pageType: .addtion)
+            cell.configureCell(
+                image: nil,
+                name: material.name,
+                pageType: .addtion
+            )
             
             DispatchQueue.main.async {
                 if let (sectionId, itemId) = self.findIndex(indexPath) {
