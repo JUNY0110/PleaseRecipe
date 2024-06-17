@@ -9,7 +9,7 @@ import UIKit
 
 import SnapKit
 
-final class MaterialAdditionViewController: BaseViewController, Navigationable {
+final class MaterialAdditionViewController: UIViewController, Navigationable {
     
     // MARK: - Properties
     typealias diffableDataSourceAlias = UICollectionViewDiffableDataSource<분류, Item>
@@ -43,7 +43,6 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }
     
     // MARK: - Views
-    
     private let emptyTextLabel: UILabel = {
         $0.text = """
                   등록된 재료가 없습니다.
@@ -75,9 +74,9 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(UIStackView())
     
     private lazy var 보관레이어: FloatingHStack = {
-        $0.configureLabel(.취소)
+        $0.configureMainLabel(style: .취소)
         $0.configureIsEnabled(isEnabled: false)
-        $0.configureMainButton(systemName: .보관하기,
+        $0.configureMainButton(style: .보관하기,
                                backgroundColor: .secondarySystemFill)
         $0.isHidden = false
         $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
@@ -85,25 +84,25 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }(FloatingHStack())
     
     private let 상온레이어: FloatingHStack = {
-        $0.configureLabel(.상온보관)
+        $0.configureSubLabel(style: .상온보관)
         $0.configureIsEnabled(isEnabled: false)
-        $0.configureSubButton(systemName: .상온보관,
+        $0.configureSubButton(style: .상온보관,
                               foregroundColor: .storageRed)
         return $0
     }(FloatingHStack())
     
     private let 냉장레이어: FloatingHStack = {
-        $0.configureLabel(.냉장보관)
+        $0.configureSubLabel(style: .냉장보관)
         $0.configureIsEnabled(isEnabled: false)
-        $0.configureSubButton(systemName: .냉장보관,
+        $0.configureSubButton(style: .냉장보관,
                               foregroundColor: .storageSkyBlue)
         return $0
     }(FloatingHStack())
     
     private let 냉동레이어: FloatingHStack = {
-        $0.configureLabel(.냉동보관)
+        $0.configureSubLabel(style: .냉동보관)
         $0.configureIsEnabled(isEnabled: false)
-        $0.configureSubButton(systemName: .냉동보관,
+        $0.configureSubButton(style: .냉동보관,
                               foregroundColor: .storageBlue)
         return $0
     }(FloatingHStack())
@@ -126,10 +125,22 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         return $0
     }(UIButton(configuration: .plain()))
     
+    // MARK: - LifeCycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        attribute()
+        
+        addSubviews()
+        layout()
+    }
+    
+    override func viewIsAppearing(_ animated: Bool) {
+        super.viewIsAppearing(animated)
+    }
+    
     // MARK: - Attribute
-    @available(*, unavailable)
-    override func attribute() {
-        super.attribute()
+    private func attribute() {
+        view.backgroundColor = .systemBackground
         
         configureNavigation()
         configureCollectionView()
@@ -140,8 +151,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
     }
     
     // MARK: - Layout
-    @available(*, unavailable)
-    override func addSubviews() {
+    private func addSubviews() {
         view.addSubview(emptyTextLabel)
         view.addSubview(collectionView)
         view.addSubview(searchBar)
@@ -154,8 +164,7 @@ final class MaterialAdditionViewController: BaseViewController, Navigationable {
         vFloatingStackView.addArrangedSubview(보관레이어)
     }
     
-    @available(*, unavailable)
-    override func layout() {
+    private func layout() {
         let searchBarHeight = 50
         
         emptyTextLabel.snp.makeConstraints {
@@ -229,7 +238,7 @@ extension MaterialAdditionViewController {
             duration: 0.15,
             options: .transitionFlipFromLeft
         ) {
-            self.보관레이어.configureMainButton(systemName: .보관하기)
+            self.보관레이어.configureMainButton(style: .보관하기)
         } completion: { finished in
             switch finished {
             case true:
@@ -242,7 +251,7 @@ extension MaterialAdditionViewController {
                     
                     UIView.animate(withDuration: 0.2) { // Floating 버튼 사라지는 애니메이션
                         stack.spacing = 0
-                        stack.configureLabel(isHidden: true) // 모든 레이블 숨기는 동작
+                        stack.configureSubLabel(isHidden: true) // 모든 레이블 숨기는 동작
                         
                         if i != 0 {                          // 보관레이어는 동작에서 제외
                             stack.alpha = 0                  // 자연스럽게 사라지기 위한 설정
@@ -267,7 +276,7 @@ extension MaterialAdditionViewController {
             duration: 0.15,
             options: .transitionFlipFromLeft
         ) {
-            self.보관레이어.configureMainButton(systemName: .취소)
+            self.보관레이어.configureMainButton(style: .취소)
         } completion: { finished in
             switch finished {
             case true:
@@ -284,7 +293,7 @@ extension MaterialAdditionViewController {
                         stack.spacing = 10
                         stack.isHidden = false // 레이어가 등장하면서
                         
-                        stack.configureLabel(isHidden: false) // 레이블이 등장하는 애니메이션
+                        stack.configureSubLabel(isHidden: false) // 레이블이 등장하는 애니메이션
                     }
                 }
                 
@@ -328,11 +337,11 @@ extension MaterialAdditionViewController {
     private func configureFloatingStatus() {
         if selectedMaterials.isEmpty {
             보관레이어.configureIsEnabled(isEnabled: false)
-            보관레이어.configureMainButton(systemName: .보관하기,
+            보관레이어.configureMainButton(style: .보관하기,
                                       backgroundColor: .secondarySystemFill)
         } else {
             보관레이어.configureIsEnabled(isEnabled: true)
-            보관레이어.configureMainButton(systemName: .보관하기,
+            보관레이어.configureMainButton(style: .보관하기,
                                       backgroundColor: .darkText)
         }
     }
@@ -351,6 +360,7 @@ extension MaterialAdditionViewController: Keyboardable {
 extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .init())
+        hideKeyboard()
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
             sections[sectionId]![itemId].isSelected = true
@@ -360,11 +370,16 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
     
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
+        hideKeyboard()
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
             sections[sectionId]![itemId].isSelected = false
             selectedMaterials.removeAll(where: {$0.name == sections[sectionId]![itemId].name})
         }
+    }
+    
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        hideKeyboard()
     }
 }
 
