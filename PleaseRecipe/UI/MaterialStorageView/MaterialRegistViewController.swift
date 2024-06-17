@@ -10,7 +10,7 @@ import UIKit
 import SnapKit
 
 
-final class MaterialRegistViewController: BaseViewController {
+final class MaterialRegistViewController: UIViewController {
     
     // MARK: - Properties
     private let time = TimeSection.allCases
@@ -127,10 +127,25 @@ final class MaterialRegistViewController: BaseViewController {
         return $0
     }(UIButton(configuration: .filled()))
     
+    // MARK: - LifeCycle
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        attribute()
+        
+        addSubviews()
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        layout()
+    }
+    
     // MARK: - Attribute
-    @available(*, unavailable)
-    override func attribute() {
-        super.attribute()
+    private func attribute() {
+        view.backgroundColor = .systemBackground
         
         collectionView.register(MaterialCell.self, forCellWithReuseIdentifier: MaterialCell.identifier)
         
@@ -143,8 +158,7 @@ final class MaterialRegistViewController: BaseViewController {
     }
     
     // MARK: - Layout
-    @available(*, unavailable)
-    override func addSubviews() {
+    private func addSubviews() {
         view.addSubview(imageSelectionLabel)
         view.addSubview(collectionView)
         view.addSubview(userInputView)
@@ -158,8 +172,7 @@ final class MaterialRegistViewController: BaseViewController {
         view.addSubview(additionButton)
     }
     
-    @available(*, unavailable)
-    override func layout() {
+    private func layout() {
         imageSelectionLabel.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(24)

@@ -131,11 +131,14 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
         attribute()
         
         addSubviews()
-        layout()
+
     }
     
-    override func viewIsAppearing(_ animated: Bool) {
-        super.viewIsAppearing(animated)
+    // FIXME: UIKeyboarLayoutGuide를 적용한 화면에서 일부 버그가 발생하는 관계로, 임시로 viewWillAppear에 적용.
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        layout()
     }
     
     // MARK: - Attribute
