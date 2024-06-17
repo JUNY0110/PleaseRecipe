@@ -12,9 +12,11 @@ import SnapKit
 final class FloatingButton: UIButton {
     
     // MARK: - Properties
-    private var imageName: String = "plus" {
+    private var imageName: String = "refrigerator.fill" {
         didSet {
-            configuration?.image = UIImage(systemName: imageName)?.withRenderingMode(.alwaysTemplate)
+            let image = UIImage(named: imageName)?.resize(newWidth: 25).withRenderingMode(.alwaysTemplate)
+            configuration?.image = image
+            configuration?.contentInsets = .init(top: 10, leading: 10, bottom: 10, trailing: 10)
         }
     }
     
@@ -39,7 +41,6 @@ final class FloatingButton: UIButton {
     private func attribute() {
         configuration = .filled()
         configuration?.cornerStyle = .capsule
-        configuration?.buttonSize = .large
     }
 }
 
@@ -47,11 +48,11 @@ final class FloatingButton: UIButton {
 // MARK: - Configure
 extension FloatingButton {
     func configureButton(
-        systemName: String,
+        imageName: String,
         foregroundColor: UIColor,
         backgroundColor: UIColor
     ) {
-        self.imageName = systemName
+        self.imageName = imageName
         self.configuration?.baseForegroundColor = foregroundColor
         self.configuration?.background.backgroundColor = backgroundColor
     }
