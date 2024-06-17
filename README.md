@@ -12,11 +12,10 @@
   - UIKit
   - ReactorKit
   - RxSwift
+  - CoreData (자체 데이터 저장)
+  - RealmSwift (외부 데이터 저장)
   - SnapKit
   - Alamofire
   - ImageCache
-  - CoreData (자체 데이터 저장)
-  - RealmSwift (외부 데이터 저장)
-  - RxSwift
 
 -----
