@@ -16,8 +16,8 @@ final class MaterialRegistViewController: BaseViewController {
     private let time = TimeSection.allCases
     private var sectionRow = 0
     private var itemRow = 0
-    private var material: Material = .init(image: nil,
-                                           name: "",
+    private var material: Material = .init(name: "", 
+                                           image: Data(),
                                            registDate: nil,
                                            useDate: Int.max,
                                            category: .식재료)
@@ -80,7 +80,7 @@ final class MaterialRegistViewController: BaseViewController {
     private lazy var useDateTextField: CustomTextField = {
         $0.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         $0.backgroundColor = .secondarySystemFill
-        $0.placeholder = "선택하지 않으면 '무기한'으로 분류"
+        $0.placeholder = "선택하지 않으시면 '14일'을 기본값으로 합니다."
         $0.borderStyle = .roundedRect
         $0.autocorrectionType = .no
         $0.inputView = pickerView
@@ -294,6 +294,10 @@ extension MaterialRegistViewController {
         }
         
         material.category = category
+        
+        
+        let beforeVC = navigationController?.presentingViewController as! MaterialAdditionViewController
+        
     }
 }
 
@@ -424,7 +428,7 @@ extension MaterialRegistViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MaterialCell.identifier, for: indexPath) as! MaterialCell
         collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .init()) // 이미지 선택 시 isSelected = true
-        material.image = cell.image
+        material.image = cell.image?.jpegData(compressionQuality: 1.0) ?? Data()
         
         editingAdditionButtonStatus()
         // override isSelected는 일반적으로 직접 조작하지 않고, 이와같이 간접적으로 다루는 것을 권장한다.
