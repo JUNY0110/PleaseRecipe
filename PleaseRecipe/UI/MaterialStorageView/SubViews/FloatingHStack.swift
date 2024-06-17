@@ -56,11 +56,19 @@ final class FloatingHStack: UIStackView {
 
 // MARK: - Configure
 extension FloatingHStack {
-    func configureLabel(
-        _ buttonStyle: FloatingButtonStyle? = nil,
+    func configureMainLabel(
+        style: TransitionButtonStyle? = nil,
         isHidden: Bool = true
     ) {
-        label.text = buttonStyle?.text ?? label.text // 버튼 최초 사용 시, 레이블 이름 저장 필요.
+        label.text = style?.text ?? label.text // 버튼 최초 사용 시, 저장된 text를 사용.
+        label.isHidden = isHidden
+    }
+    
+    func configureSubLabel(
+        style: FloatingButtonStyle? = nil,
+        isHidden: Bool = true
+    ) {
+        label.text = style?.text ?? label.text // 버튼 최초 사용 시, 저장된 text를 사용.
         label.isHidden = isHidden
     }
     
@@ -69,24 +77,24 @@ extension FloatingHStack {
     }
     
     func configureMainButton(
-        systemName: FloatingButtonStyle,
+        style: TransitionButtonStyle,
         foregroundColor: UIColor = .white,
         backgroundColor: UIColor = .darkText
     ) {
         button.configureButton(
-            systemName: systemName.imageName,
+            imageName: style.imageName,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor
         )
     }
     
     func configureSubButton(
-        systemName: FloatingButtonStyle,
+        style: FloatingButtonStyle,
         foregroundColor: UIColor,
         backgroundColor: UIColor = .white
     ) {
         button.configureButton(
-            systemName: systemName.imageName,
+            imageName: style.imageName,
             foregroundColor: foregroundColor,
             backgroundColor: backgroundColor
         )
@@ -102,12 +110,33 @@ extension FloatingHStack {
 
 // MARK: - Nested Types
 extension FloatingHStack {
+    enum TransitionButtonStyle {
+        case 취소
+        case 보관하기
+        
+        var imageName: String {
+            switch self {
+            case .취소:
+                return "xmark"
+            case .보관하기:
+                return "refrigerator.fill"
+            }
+        }
+        
+        var text: String {
+            switch self {
+            case .취소:
+                return "취소"
+            case .보관하기:
+                return ""
+            }
+        }
+    }
+    
     enum FloatingButtonStyle {
         case 냉동보관
         case 냉장보관
         case 상온보관
-        case 취소
-        case 보관하기
         
         var imageName: String {
             switch self {
@@ -116,12 +145,7 @@ extension FloatingHStack {
             case .냉장보관:
                 return "snowflake"
             case .상온보관:
-                return "snowflake.slash"
-                
-            case .취소:
-                return "xmark"
-            case .보관하기:
-                return "refrigerator.fill"
+                return "snowflake_slash"
             }
         }
         
@@ -133,11 +157,6 @@ extension FloatingHStack {
                 return "냉장"
             case .상온보관:
                 return "상온"
-                
-            case .취소:
-                return "취소"
-            case .보관하기:
-                return ""
             }
         }
     }
