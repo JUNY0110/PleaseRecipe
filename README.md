@@ -10,6 +10,8 @@
 -----
 ## ⚙️ 사용 기술 [Skills]
   - UIKit
+  - ReactorKit
+  - RxSwift
   - SnapKit
   - Alamofire
   - ImageCache
