@@ -8,7 +8,7 @@
 import UIKit
 
 
-enum IngredientInfo: MaterialProtocol {
+enum IngredientInfo: IngredientProtocol {
     static var allCases: [IngredientInfo] {
         Vegetables.allCases.map(IngredientInfo.채소) + Pork.allCases.map(IngredientInfo.돼지고기) +
         Beef.allCases.map(IngredientInfo.소고기) + Chicken.allCases.map(IngredientInfo.닭고기) +
