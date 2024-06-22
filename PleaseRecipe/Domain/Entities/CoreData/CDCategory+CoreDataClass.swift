@@ -6,10 +6,7 @@
 //
 //
 
-import Foundation
 import CoreData
 
 @objc(CDCategory)
-public class CDCategory: NSManagedObject {
-
-}
+public class CDCategory: NSManagedObject {}

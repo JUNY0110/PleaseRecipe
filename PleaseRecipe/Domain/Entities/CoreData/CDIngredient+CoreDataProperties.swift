@@ -6,7 +6,6 @@
 //
 //
 
-import Foundation
 import CoreData
 
 
@@ -23,19 +22,3 @@ extension CDIngredient {
 }
 
 extension CDIngredient : Identifiable {}
-
-//extension CDCategory {
-//
-//    func toDomain() -> MaterialItem {
-//        return .init(
-//            image: UIImage(data: ingredients?, name: <#T##String#>, useDate: <#T##Int32#>, category: <#T##String#>, storageType: <#T##String?#>
-////            image: UIImage(data: ingredients.image)
-////            image: UIImage(data: image),
-////            name: name,
-////            useDate: useDate,
-////            category: category?.title ?? "",
-////            storageType: "",
-////            isSelected: false
-//        )
-//    }
-//}

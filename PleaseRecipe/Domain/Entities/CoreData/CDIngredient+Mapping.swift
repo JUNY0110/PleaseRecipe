@@ -9,7 +9,7 @@
 import UIKit
 
 extension CDIngredient {
-    func toDomain() -> MaterialItem {
+    func toDomain() -> IngredientItem {
         return .init(
             image: UIImage(data: image),
             name: name,
