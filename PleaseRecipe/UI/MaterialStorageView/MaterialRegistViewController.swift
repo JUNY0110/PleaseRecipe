@@ -16,11 +16,7 @@ final class MaterialRegistViewController: UIViewController {
     private let time = TimeSection.allCases
     private var sectionRow = 0
     private var itemRow = 0
-    private var material: Material = .init(name: "", 
-                                           image: Data(),
-                                           registDate: nil,
-                                           useDate: Int.max,
-                                           category: .식재료)
+    private var material: IngredientItem? = nil
     
     // MARK: - Views
     private let imageSelectionLabel: UILabel = {
