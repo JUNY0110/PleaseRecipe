@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="Category" representedClassName="Category" syncable="YES">
+        <attribute name="classification" optional="YES" attributeType="String"/>
+        <attribute name="registDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <relationship name="ingredients" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Ingredient" inverseName="category" inverseEntity="Ingredient"/>
+    </entity>
+    <entity name="Ingredient" representedClassName="Ingredient" syncable="YES">
+        <attribute name="image" optional="YES" attributeType="Binary"/>
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <attribute name="useDate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="ingredients" inverseEntity="Category"/>
+        <relationship name="storages" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Storage" inverseName="ingredients" inverseEntity="Storage"/>
+    </entity>
+    <entity name="Storage" representedClassName="Storage" syncable="YES">
+        <attribute name="classification" optional="YES" attributeType="String"/>
+        <relationship name="ingredients" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="Ingredient" inverseName="storages" inverseEntity="Ingredient"/>
+    </entity>
+</model>
