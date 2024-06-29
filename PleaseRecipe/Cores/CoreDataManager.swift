@@ -76,6 +76,27 @@ final class CoreDataManager {
             context.rollback() // Context에 추가된 Material이 올바르지 않은 형태이면, 추가되기 이전 상태로 되돌림(Undo).
         }
     }
+    
+    // 저장된 재료만 가져오기 위한 코드
+    func fetchIngredients() -> [CDIngredient] {
+        let fetchRequest = CDIngredient.fetchRequest()
+        let sortByCategory = NSSortDescriptor(key: #keyPath(CDIngredient.category.title), ascending: true)
+        let sortByName = NSSortDescriptor(key: #keyPath(CDIngredient.name), ascending: true)
+        fetchRequest.sortDescriptors = [sortByCategory, sortByName]
+        
+        var categoryObject = [CDIngredient]()
+        
+        context.performAndWait {
+            do {
+                categoryObject = try context.fetch(fetchRequest)
+            } catch {
+                fatalError(error.localizedDescription)
+            }
+        }
+        
+        return categoryObject
+    }
+    
 // MARK: - CoreData Setup
 extension CoreDataManager {
     private func initialSetup() {
