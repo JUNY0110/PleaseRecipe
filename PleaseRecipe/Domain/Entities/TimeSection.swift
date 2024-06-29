@@ -10,21 +10,29 @@ import Foundation
 // MARK: - Nested Types
 extension MaterialRegistViewController {
     enum TimeSection: String, CaseIterable {
-        case none = "무기한"
         case day = "일"
         case month = "월"
         case year = "년"
         
         var list: [Int] {
             switch self {
-            case .none:
-                return [0]
             case .day:
-                return Array<Int>(0...30)
+                return Array<Int>(1...30)
             case .month:
-                return Array<Int>(0...11)
+                return Array<Int>(1...11)
             case .year:
-                return Array<Int>(0...20)
+                return Array<Int>(1...20)
+            }
+        }
+        
+        var suffixString: String {
+            switch self {
+            case .day:
+                return "일"
+            case .month:
+                return "개월"
+            case .year:
+                return "년"
             }
         }
     }
