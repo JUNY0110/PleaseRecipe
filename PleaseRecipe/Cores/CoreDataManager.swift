@@ -29,6 +29,14 @@ final class CoreDataManager {
         return persistentContainer.viewContext
     }
     
+    // MARK: - Init
+    private init() {
+        if !UserDefaults.standard.bool(forKey: "isFirstLaunch") { // 첫 접속이라면, 초기데이터를 제공한다
+            UserDefaults.standard.set(true, forKey: "isFirstLaunch")
+            
+            initialSetup()
+        }
+    }
     
     // MARK: - Methods
     func saveContext() {
@@ -66,6 +74,18 @@ final class CoreDataManager {
             return saveContext()
         } catch {
             context.rollback() // Context에 추가된 Material이 올바르지 않은 형태이면, 추가되기 이전 상태로 되돌림(Undo).
+        }
+    }
+// MARK: - CoreData Setup
+extension CoreDataManager {
+    private func initialSetup() {
+        IngredientInfo.allCases.forEach { ingredient in
+            guard let imageData = ingredient.image.jpegData(compressionQuality: 1.0) else { return }
+            
+            registIngredient(imageData: imageData,
+                             name: ingredient.name,
+                             useDate: 0,
+                             category: ingredient.category.title)
         }
     }
 }
