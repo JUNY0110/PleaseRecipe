@@ -348,24 +348,19 @@ extension MaterialRegistViewController {
 
 
 // MARK: - UIPicker
-extension MaterialRegistViewController: UIPickerViewDelegate {
+extension IngredientRegistViewController: UIPickerViewDelegate {
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         switch component {
         case 0:
             return time[row].rawValue
         case 1:
-            if time[sectionRow] == .none {
-                return "무기한"
-            }
-            return "\(time[sectionRow].list[row])\(time[sectionRow].rawValue)"
+            return "\(time[sectionRow].list[row])\(time[sectionRow].suffixString)"
         default:
             return nil
         }
     }
     
     func pickerView(_ pickerView: UIPickerView, didSelectRow row: Int, inComponent component: Int) {
-        var list: [Int]!
-        
         switch component {
         case 0: // 왼쪽(Section)
             sectionRow = row                 // 섹션 변경 반영
@@ -378,15 +373,29 @@ extension MaterialRegistViewController: UIPickerViewDelegate {
             itemRow = row
         }
         
-        switch time[sectionRow] {
-        case .none:
-            useDateTextField.text = ""
+        setupUseDateText(index: sectionRow, label: useDateTitleLabel)
+    }
+    
+    private func setupUseDateText(index: Int, label: UILabel) {
+        switch time[index] {
         case .day:
-            useDateTextField.text = "D-\(list[itemRow])"
+            label.configureImageLabel(
+                titleImage: .hourglass,
+                text: "소비기한: \(list[itemRow])일 이내"
+            )
+            useDateCache = list[itemRow]
         case .month:
-            useDateTextField.text = "D-\(list[itemRow] * 30)"
+            label.configureImageLabel(
+                titleImage: .hourglass,
+                text: "소비기한: \(list[itemRow] * 30)일 이내"
+            )
+            useDateCache = list[itemRow] * 30
         case .year:
-            useDateTextField.text = "D-\(list[itemRow] * 365)"
+            label.configureImageLabel(
+                titleImage: .hourglass,
+                text: "소비기한: \(list[itemRow] * 30 * 12)일 이내"
+            )
+            useDateCache = list[itemRow] * 30 * 12
         }
     }
 }
