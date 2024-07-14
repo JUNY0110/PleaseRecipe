@@ -317,34 +317,36 @@ extension MaterialRegistViewController {
     }
 }
 
-// MARK: - PickerToolBar
-extension MaterialRegistViewController {
-    private func configurePickerToolBar() {
-        let toolBar = UIToolbar()
-        toolBar.barStyle = .default
-        toolBar.isTranslucent = true
-        toolBar.tintColor = .darkText
-        toolBar.backgroundColor = .darkGray
-        toolBar.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 35) // width를 명확하게 잡아주지 않으면 레이아웃 에러 알림 발생
-        
-        let doneButton = UIBarButtonItem(title: "완료", style: .plain, target: self, action: #selector(tappedDoneButton))
-        let space = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
-        let cancelButton = UIBarButtonItem(title: "취소", style: .plain, target: self, action: #selector(tappedCancelButton))
-        
-        toolBar.setItems([cancelButton, space, doneButton], animated: true)
-        toolBar.isUserInteractionEnabled = true
-        
-        useDateTextField.inputAccessoryView = toolBar
-    }
-    
-    @objc func tappedDoneButton() {
-        useDateTextField.resignFirstResponder()
-    }
-    
-    @objc func tappedCancelButton() {
-        useDateTextField.resignFirstResponder()
+// MARK: - CustomSwitchDelegate
+extension IngredientRegistViewController: CustomSwitchDelegate {
+    func sendStatus(_ isOn: Bool) {
+        switch isOn {
+        case true:
+            self.useDateTitleLabel.configureImageLabel(
+                titleImage: .hourglass,
+                text: "소비기한: \(self.useDateCache)일 이내"
+            )
+            registeringItem.changeUseDate(0)
+            
+            UIView.animate(withDuration: 0.3) {
+                self.useDateBottomHStack.appear(isAlpha: true)
+                self.pickerView.appear(isAlpha: true)
+            }
+        case false:
+            self.useDateBottomHStack.alpha = 0
+            self.pickerView.alpha = 0
+            self.useDateTitleLabel.configureImageLabel(
+                titleImage: .hourglass,
+                text: "소비기한: 없음"
+            )
+            UIView.animate(withDuration: 0.3) {
+                self.useDateBottomHStack.disappear(isAlpha: false)
+                self.pickerView.disappear(isAlpha: false)
+            }
+        }
     }
 }
+
 
 
 // MARK: - UIPicker
