@@ -357,9 +357,15 @@ extension IngredientRegistViewController {
         present(navi, animated: true)
     }
     
+    private func pressedAdditionButton() {
+        let name = registeringItem.fetchName()
+        guard let category = categoryLabel.text?.split(separator: " ").last else {return assertionFailure("카테고리가 선택되지 않았습니다.")}
+        registeringItem.changeCategory(String(category))
         
-        let beforeVC = navigationController?.presentingViewController as! MaterialAdditionViewController
+        coredataManager.registIngredient(registeringItem)
         
+        let ingredientSearchItem = IngredientSearchItem(name: name, category: String(category))
+        completion(ingredientSearchItem)
     }
 }
 
