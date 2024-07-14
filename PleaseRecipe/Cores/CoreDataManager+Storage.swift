@@ -1,3 +1,10 @@
+//
+//  StorageCoreDataManager.swift
+//  PleaseRecipe
+//
+//  Created by 지준용 on 7/11/24.
+//
+
 import Foundation
 
 
@@ -25,4 +32,28 @@ extension CoreDataManager {
         }
     }
     
+    private func fetchCDStorageIngredients(_ storage: String) -> [CDIngredient] {
+        let fetchRequest = CDIngredient.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "ANY storages.title = %@", storage)
+        
+        let sortByUseDate = NSSortDescriptor(key: #keyPath(CDIngredient.useDate), ascending: true)
+        fetchRequest.sortDescriptors = [sortByUseDate]
+        
+        var ingredientObject = [CDIngredient]()
+        
+        do {
+            let ingredients = try context.fetch(fetchRequest)
+            ingredientObject = ingredients
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        return ingredientObject
+    }
+    
+    func fetchStoredIngredients(_ storage: String) -> [IngredientStorageItem] {
+        let ingredients = fetchCDStorageIngredients(storage)
+        
+        return ingredients.map { $0.convertToStorageItem(storage)! }
+    }
 }
