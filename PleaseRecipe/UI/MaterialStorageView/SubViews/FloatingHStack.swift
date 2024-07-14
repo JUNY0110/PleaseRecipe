@@ -9,7 +9,13 @@ import UIKit
 
 import SnapKit
 
+protocol FloatingHstackDelegate: AnyObject {
+    func touchButton(action: UIAction, label: UILabel)
+}
+
 final class FloatingHStack: UIStackView {
+    
+    weak var delegate: FloatingHstackDelegate?
     
     // MARK: - Views
     private let label: UILabel = {
@@ -27,8 +33,7 @@ final class FloatingHStack: UIStackView {
         
         attribute()
         
-        addSubviews()
-        layout()
+        addArrangedSubviews()
     }
     
     @available(*, unavailable)
@@ -40,16 +45,14 @@ final class FloatingHStack: UIStackView {
     private func attribute() {
         axis = .horizontal
         isHidden = true
+        
+        button.addAction(UIAction(handler: { [unowned self] action in self.touchButton(action)}), for: .touchUpInside)
     }
     
     // MARK: - Layout
-    private func addSubviews() {
+    private func addArrangedSubviews() {
         addArrangedSubview(label)
         addArrangedSubview(button)
-    }
-    
-    private func layout() {
-        button.setContentHuggingPriority(.defaultHigh, for: .horizontal)
     }
 }
 
@@ -65,7 +68,7 @@ extension FloatingHStack {
     }
     
     func configureSubLabel(
-        style: FloatingButtonStyle? = nil,
+        style: StorageType? = nil,
         isHidden: Bool = true
     ) {
         label.text = style?.text ?? label.text // 버튼 최초 사용 시, 저장된 text를 사용.
@@ -89,7 +92,7 @@ extension FloatingHStack {
     }
     
     func configureSubButton(
-        style: FloatingButtonStyle,
+        style: StorageType,
         foregroundColor: UIColor,
         backgroundColor: UIColor = .white
     ) {
@@ -106,58 +109,8 @@ extension FloatingHStack {
     func addButtonAction(_ action: UIAction) {
         button.addAction(action, for: .touchUpInside)
     }
-}
-
-// MARK: - Nested Types
-extension FloatingHStack {
-    enum TransitionButtonStyle {
-        case 취소
-        case 보관하기
-        
-        var imageName: String {
-            switch self {
-            case .취소:
-                return "xmark"
-            case .보관하기:
-                return "refrigerator.fill"
-            }
-        }
-        
-        var text: String {
-            switch self {
-            case .취소:
-                return "취소"
-            case .보관하기:
-                return ""
-            }
-        }
-    }
     
-    enum FloatingButtonStyle {
-        case 냉동보관
-        case 냉장보관
-        case 상온보관
-        
-        var imageName: String {
-            switch self {
-            case .냉동보관:
-                return "snowflake"
-            case .냉장보관:
-                return "snowflake"
-            case .상온보관:
-                return "snowflake_slash"
-            }
-        }
-        
-        var text: String {
-            switch self {
-            case .냉동보관:
-                return "냉동"
-            case .냉장보관:
-                return "냉장"
-            case .상온보관:
-                return "상온"
-            }
-        }
+    func touchButton(_ action: UIAction) {
+        delegate?.touchButton(action: action, label: label)
     }
 }
