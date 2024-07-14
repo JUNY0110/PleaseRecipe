@@ -32,6 +32,26 @@ extension CoreDataManager {
         }
     }
     
+    // 구매(소유)한 재료를 삭제하기 위한 메서드
+    func deleteStoredIngredient(name: String, storage: String) {
+        // 해당 재료명을 가진 데이터
+        let fetchRequest = CDIngredient.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name = %@", name)
+        fetchRequest.predicate = NSPredicate(format: "ANY storages.title = %@", storage)
+        
+        do {
+            // 해당 재료명이 가지고 있는 저장방식을 삭제함.
+            let ingredients = try context.fetch(fetchRequest)
+            let toDelete = ingredients[0]
+            
+            context.delete(toDelete)
+            
+            return saveContext()
+        } catch {
+            print(error)
+        }
+    }
+    
     private func fetchCDStorageIngredients(_ storage: String) -> [CDIngredient] {
         let fetchRequest = CDIngredient.fetchRequest()
         fetchRequest.predicate = NSPredicate(format: "ANY storages.title = %@", storage)
