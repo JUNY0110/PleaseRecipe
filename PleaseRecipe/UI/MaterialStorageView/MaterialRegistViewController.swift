@@ -36,7 +36,7 @@ final class MaterialRegistViewController: UIViewController {
         return $0
     }(UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout()))
     
-    private let userInputView = UIView()
+    private let containerView = UIView()
     
     private let materialNameLabel: UILabel = {
         $0.text = "재료명"
