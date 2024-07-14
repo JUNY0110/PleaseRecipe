@@ -19,6 +19,7 @@ enum IngredientSection: String, CaseIterable, Hashable {
     case 부재료
     case 견과류
     case 조미료
+    case 기타
     
     var title: String {
         return self.rawValue
