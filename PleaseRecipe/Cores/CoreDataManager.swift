@@ -71,10 +71,11 @@ final class CoreDataManager {
         }
     }
     
-    // 저장된 재료만 가져오기 위한 코드
-    func fetchIngredients() -> [CDIngredient] {
+    
+    // 저장된 재료만 가져오기 위한 메서드
+    func fetchCDIngredients() -> [CDIngredient] {
         let fetchRequest = CDIngredient.fetchRequest()
-        let sortByCategory = NSSortDescriptor(key: #keyPath(CDIngredient.category.title), ascending: true)
+        let sortByCategory = NSSortDescriptor(key: #keyPath(CDIngredient.category), ascending: true)
         let sortByName = NSSortDescriptor(key: #keyPath(CDIngredient.name), ascending: true)
         fetchRequest.sortDescriptors = [sortByCategory, sortByName]
         
@@ -89,6 +90,14 @@ final class CoreDataManager {
         }
         
         return categoryObject
+    }
+    
+    // 검색에 필요한 데이터(재료명, 식품분류)만 가져오기 위한 메서드
+    func fetchIngredientSearchItem() -> [IngredientSearchItem] {
+        let ingredients = fetchCDIngredients()
+        let ingredientSearchItems = ingredients.map { $0.convertToSearchItem() }
+        
+        return ingredientSearchItems
     }
     
 // MARK: - CoreData Setup
