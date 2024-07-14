@@ -100,6 +100,27 @@ final class CoreDataManager {
         return ingredientSearchItems
     }
     
+    
+    func deleteIngredient(_ name: String) {
+        let fetchRequest = CDIngredient.fetchRequest()
+        fetchRequest.predicate = NSPredicate(format: "name = %@", name)
+        
+        do {
+            let ingredients = try context.fetch(fetchRequest)
+            let toDelete = ingredients[0]
+            
+            context.delete(toDelete)
+            
+            return saveContext()
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    func modifyMaterial() {}
+}
+
+
 // MARK: - CoreData Setup
 extension CoreDataManager {
     private func initialSetup() {
