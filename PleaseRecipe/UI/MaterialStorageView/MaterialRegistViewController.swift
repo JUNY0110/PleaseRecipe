@@ -328,31 +328,13 @@ extension IngredientRegistViewController {
 
 
 // MARK: - 화면전환 메서드
-extension MaterialRegistViewController {
-    private func dismissViewController(_ action: UIAction) {
-        let sender = action.sender as! UIButton
-        guard let title = sender.titleLabel?.text,
-              let buttonType = ButtonType(rawValue: title) else { return }
-        
-        switch buttonType {
-        case .addition:
-            pressedAdditionButton()
-        case .cancel:
-            pressedCancelButton()
-        }
+extension IngredientRegistViewController {
+    @objc private func dismissViewController(_ action: UIAction) {
+        pressedAdditionButton()
         
         navigationController?.popViewController(animated: true)
     }
     
-    private func pressedCancelButton() {
-        print("취소")
-    }
-    
-    private func pressedAdditionButton() {
-        guard let name = materialNameTextField.text else { return }
-        guard let useDateText = useDateTextField.text else { return  }
-        guard let categoryText = categoryToggleLabel.text else { return  }
-        guard let category = MaterialCategory(rawValue: categoryText) else { return }
         
         material.name = name
         
