@@ -1,5 +1,5 @@
 //
-//  MaterialStorageViewController.swift
+//  IngredientStorageViewController.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 5/29/24.
@@ -9,7 +9,7 @@ import UIKit
 
 import SnapKit
 
-final class MaterialStorageViewController: BaseViewController {
+final class IngredientStorageViewController: BaseViewController {
     
     // MARK: - Properties
     private let items = ["냉장", "냉동", "상온"]
@@ -36,16 +36,15 @@ final class MaterialStorageViewController: BaseViewController {
     }(CustomSegmentedControl(items: items))
     
     private lazy var pageViewController: UIPageViewController = {
-        $0.setViewControllers([viewControllers[0]], direction: .forward, animated: true)
         $0.delegate = self
         $0.dataSource = self
         return $0
     }(UIPageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal))
     
     private let containerView = UIView()
-    private let 냉장보관재료 = MaterialViewController()
-    private let 냉동보관재료 = MaterialViewController()
-    private let 상온보관재료 = MaterialViewController()
+    private let 냉장보관재료 = StorageViewController(storage: .냉장보관)
+    private let 냉동보관재료 = StorageViewController(storage: .냉동보관)
+    private let 상온보관재료 = StorageViewController(storage: .상온보관)
     
     // MARK: - Attribute
     @available(*, unavailable)
@@ -53,6 +52,7 @@ final class MaterialStorageViewController: BaseViewController {
         super.attribute()
         
         configureNavigation()
+        setViewControllers()
     }
     
     // MARK: - Layout
@@ -84,29 +84,51 @@ final class MaterialStorageViewController: BaseViewController {
 }
 
 // MARK: - Navigation
-extension MaterialStorageViewController: Navigationable {
+extension IngredientStorageViewController: Navigationable {
     private func configureNavigation() {
         rightBarButtonItem(systemName: "plus", #selector(presentViewController))
     }
     
     @objc func presentViewController() {
-        let vc = MaterialAdditionViewController()
+        let vc = IngredientAdditionViewController()
+        performSnapshot(from: vc)
+        
         let navi = UINavigationController(rootViewController: vc)
         navi.modalPresentationStyle = .fullScreen
         present(navi, animated: true)
     }
+    
+    private func performSnapshot(from vc: IngredientAdditionViewController) {
+        vc.completion = { item, style in
+            switch style {
+            case .냉동보관:
+                self.냉동보관재료.performSnapshot()
+            case .냉장보관:
+                self.냉장보관재료.performSnapshot()
+            case .상온보관:
+                self.상온보관재료.performSnapshot()
+            }
+        }
+    }
 }
 
 // MARK: - SegmentedControl를 이용해 PageController를 조작하기 위한 코드
-extension MaterialStorageViewController {
-    @objc func changePage(_ control: UISegmentedControl) {
+extension IngredientStorageViewController {
+    @objc private func changePage(_ control: UISegmentedControl) {
         self.currentPage = control.selectedSegmentIndex
+    }
+    
+    // 모든 page를 Load하기 위한 메서드
+    private func setViewControllers() {
+        for vc in viewControllers.reversed() {
+            pageViewController.setViewControllers([vc], direction: .forward, animated: true)
+        }
     }
 }
 
 
 // MARK: - PageViewController을 활용한 동작을 적용하는 코드
-extension MaterialStorageViewController: UIPageViewControllerDelegate {
+extension IngredientStorageViewController: UIPageViewControllerDelegate {
     func pageViewController(
         _ pageViewController: UIPageViewController,
         didFinishAnimating finished: Bool,
@@ -120,7 +142,7 @@ extension MaterialStorageViewController: UIPageViewControllerDelegate {
     }
 }
 
-extension MaterialStorageViewController: UIPageViewControllerDataSource {
+extension IngredientStorageViewController: UIPageViewControllerDataSource {
     func pageViewController(
         _ pageViewController: UIPageViewController,
         viewControllerBefore viewController: UIViewController
