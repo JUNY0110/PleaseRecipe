@@ -12,11 +12,11 @@ import SnapKit
 final class MaterialAdditionViewController: UIViewController, Navigationable {
     
     // MARK: - Properties
-    typealias diffableDataSourceAlias = UICollectionViewDiffableDataSource<분류, Item>
+    typealias diffableDataSourceAlias = UICollectionViewDiffableDataSource<IngredientSection, IngredientItem>
     
     static let sectionHeaderElementKind = "SectionHeaderElementKind"
     private var diffableDataSource: diffableDataSourceAlias!
-    private var snapshot: NSDiffableDataSourceSnapshot<분류, Item>!
+    private var snapshot: NSDiffableDataSourceSnapshot<IngredientSection, IngredientItem>!
     private var isShowingFloating = false
     private var selectedMaterials = [Item]() {
         didSet {
@@ -24,23 +24,9 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
         }
     }
     
-    private var sections: [분류: [Item]] = [
-        .채소: 채소.allCases.map { Item(name: $0.name, isSelected: false) },
-        .과일: 과일.allCases.map { Item(name: $0.name, isSelected: false) },
-        .닭고기: 닭고기.allCases.map { Item(name: $0.name, isSelected: false) },
-        .돼지고기: 돼지고기.allCases.map { Item(name: $0.name, isSelected: false) },
-        .소고기: 소고기.allCases.map { Item(name: $0.name, isSelected: false) },
-        .부재료: 부재료.allCases.map { Item(name: $0.name, isSelected: false) },
-        .통조림: 통조림.allCases.map { Item(name: $0.name, isSelected: false) },
-        .견과류: 견과류.allCases.map { Item(name: $0.name, isSelected: false) },
-        .조미료: 조미료.allCases.map { Item(name: $0.name, isSelected: false) },
+    private var sections: [IngredientSection: [IngredientItem]] = [
+        .채소: [], .과일: [], .닭고기: [], .돼지고기: [], .소고기: [], .부재료: [], .통조림: [], .견과류: [], .조미료: []
     ]
-    
-    // MARK: - Nested Types
-    struct Item: Hashable {
-        let name: String
-        var isSelected: Bool
-    }
     
     // MARK: - Views
     private let emptyTextLabel: UILabel = {
@@ -322,7 +308,7 @@ extension MaterialAdditionViewController {
     private func moveToRegistViewController() {
         let vc = MaterialRegistViewController()
         let text = searchBar.text
-        vc.configureMaterialName(text)
+        vc.configureMaterialName(text ?? "")
         
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -366,7 +352,7 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
         hideKeyboard()
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
-            sections[sectionId]![itemId].isSelected = true
+            sections[sectionId]![itemId].isSelectedToggle()
             selectedMaterials.append(sections[sectionId]![itemId])
         }
     }
@@ -376,7 +362,7 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
         hideKeyboard()
         
         if let (sectionId, itemId) = self.findIndex(indexPath) {
-            sections[sectionId]![itemId].isSelected = false
+            sections[sectionId]![itemId].isSelectedToggle()
             selectedMaterials.removeAll(where: {$0.name == sections[sectionId]![itemId].name})
         }
     }
@@ -431,10 +417,10 @@ extension MaterialAdditionViewController: Compositionable {
         collectionView.dataSource = self.diffableDataSource
     }
     
-    private func performSnapshot(with searchText: String? = "") {
-        snapshot = NSDiffableDataSourceSnapshot<분류, Item>()
+    func performSnapshot(with searchText: String = "") {
+        snapshot = NSDiffableDataSourceSnapshot<IngredientSection, IngredientItem>()
         
-        for section in 분류.allCases {
+        for section in IngredientSection.allCases {
             guard let items = sections[section] else { continue }
             
             // 검색이 비어있으면, 전체 보여주기
@@ -463,12 +449,12 @@ extension MaterialAdditionViewController {
         return UICollectionView.SupplementaryRegistration<HeaderCell>(elementKind: Self.sectionHeaderElementKind){ [unowned self] headerView, elementKind, indexPath in
             
             let headerItem = snapshot.sectionIdentifiers[indexPath.section]
-            headerView.configureCell(headerItem.name)
+            headerView.configureCell(headerItem.title)
         }
     }
     
-    private func cellRegistration() -> UICollectionView.CellRegistration<MaterialCell, Item>{
-        return UICollectionView.CellRegistration<MaterialCell, Item> { [unowned self] cell, indexPath, material in
+    private func cellRegistration() -> UICollectionView.CellRegistration<MaterialCell, IngredientItem>{
+        return UICollectionView.CellRegistration<MaterialCell, IngredientItem> { [unowned self] cell, indexPath, material in
             
             cell.configureCell(
                 image: nil,
@@ -485,7 +471,7 @@ extension MaterialAdditionViewController {
         }
     }
     
-    private func findIndex(_ indexPath: IndexPath) -> (sectionId: 분류, itemId: Int)? {
+    private func findIndex(_ indexPath: IndexPath) -> (sectionId: IngredientSection, itemId: Int)? {
         let sectionId = snapshot.sectionIdentifiers[indexPath.section]
         let items = snapshot.itemIdentifiers(inSection: sectionId)
         let item = items[indexPath.item]

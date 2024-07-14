@@ -124,8 +124,7 @@ extension MaterialStorageViewController: UIPageViewControllerDataSource {
     func pageViewController(
         _ pageViewController: UIPageViewController,
         viewControllerBefore viewController: UIViewController
-    ) -> UIViewController?
-    {
+    ) -> UIViewController? {
         guard let index = self.viewControllers.firstIndex(of: viewController),
               index - 1 >= 0
         else { return nil }  // 현재 VC가 첫번째 VC이면, 왼쪽으로 넘기지 못하고
@@ -136,8 +135,7 @@ extension MaterialStorageViewController: UIPageViewControllerDataSource {
     func pageViewController(
         _ pageViewController: UIPageViewController,
         viewControllerAfter viewController: UIViewController
-    ) -> UIViewController?
-    {
+    ) -> UIViewController? {
         guard let index = self.viewControllers.firstIndex(of: viewController),
               index + 1 < self.viewControllers.count
         else { return nil }  // 현재 VC가 마지막 VC이면, 오른쪽으로 넘기지 못하고

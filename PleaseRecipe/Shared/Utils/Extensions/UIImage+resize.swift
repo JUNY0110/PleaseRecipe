@@ -1,5 +1,5 @@
 //
-//  UIImage+Extension.swift
+//  UIImage+resize.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 11/12/23.
