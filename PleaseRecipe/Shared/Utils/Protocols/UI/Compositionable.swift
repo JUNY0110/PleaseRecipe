@@ -18,7 +18,7 @@ protocol Compositionable {
 
 extension Compositionable where Self: UIViewController {
     func createCompositionalLayout() -> UICollectionViewLayout {
-        let item = configureItem(width: .estimated(200), height: .absolute(30))
+        let item = configureItem(width: .fractionalWidth(1.0), height: .absolute(30))
         
         let group = configureGroup(width: .fractionalWidth(1.0),
                                    height: .absolute(30),
