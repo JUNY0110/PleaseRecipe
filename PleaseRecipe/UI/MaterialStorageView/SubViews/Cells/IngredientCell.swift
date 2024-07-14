@@ -26,6 +26,9 @@ final class IngredientCell: UICollectionViewCell {
                 nameLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
             case .regist:
                 nameLabel.isHidden = true
+            case .categorySelect:
+                imageView.isHidden = true
+                nameLabel.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
             }
         }
     }
@@ -136,5 +139,6 @@ extension IngredientCell {
         case storage
         case addition
         case regist
+        case categorySelect
     }
 }
