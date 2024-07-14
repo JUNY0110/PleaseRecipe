@@ -32,7 +32,7 @@ final class TabBarController: UITabBarController {
     }
     
     private func setupTabBar() {
-        let vc1 = UINavigationController(rootViewController: MaterialStorageViewController())
+        let vc1 = UINavigationController(rootViewController: IngredientStorageViewController())
         let vc2 = UINavigationController(rootViewController: UIViewController())
         let vc3 = UINavigationController(rootViewController: UIViewController())
         

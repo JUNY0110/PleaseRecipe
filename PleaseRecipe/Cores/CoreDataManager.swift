@@ -53,7 +53,7 @@ final class CoreDataManager {
     }
 
 
-    // Material을 등록해서 AddtionView에 추가하는 코드
+    // Ingredient을 등록해서 AddtionView에 추가하는 코드
     func registIngredient(
         _ ingredient: IngredientRegisterRequestDTO
     ) {
@@ -67,7 +67,7 @@ final class CoreDataManager {
             try ingredientObject.validateForInsert() // 데이터 타당성 검사
             return saveContext()
         } catch {
-            context.rollback() // Context에 추가된 Material이 올바르지 않은 형태이면, 추가되기 이전 상태로 되돌림(Undo).
+            context.rollback() // Context에 추가된 Ingredient가 올바르지 않은 형태이면, 추가되기 이전 상태로 되돌림(Undo).
         }
     }
     
@@ -117,7 +117,7 @@ final class CoreDataManager {
         }
     }
     
-    func modifyMaterial() {}
+    func modifyIngredient() {}
 }
 
 

@@ -1,5 +1,5 @@
 //
-//  MaterialProtocol.swift
+//  IngredientProtocol.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 6/21/24.

@@ -8,7 +8,7 @@
 import Foundation
 
 // MARK: - Nested Types
-extension MaterialRegistViewController {
+extension IngredientRegistViewController {
     enum TimeSection: String, CaseIterable {
         case day = "일"
         case month = "월"

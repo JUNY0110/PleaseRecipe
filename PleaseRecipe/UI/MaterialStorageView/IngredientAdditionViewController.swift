@@ -1,5 +1,5 @@
 //
-//  MaterialAdditionViewController.swift
+//  IngredientAdditionViewController.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 5/31/24.
@@ -9,24 +9,27 @@ import UIKit
 
 import SnapKit
 
-final class MaterialAdditionViewController: UIViewController, Navigationable {
+
+final class IngredientAdditionViewController: BaseViewController, Navigationable {
     
     // MARK: - Properties
-    typealias diffableDataSourceAlias = UICollectionViewDiffableDataSource<IngredientSection, IngredientItem>
+    typealias diffableSection = IngredientSection
+    typealias diffableItem = IngredientSearchItem
     
     static let sectionHeaderElementKind = "SectionHeaderElementKind"
-    private var diffableDataSource: diffableDataSourceAlias!
-    private var snapshot: NSDiffableDataSourceSnapshot<IngredientSection, IngredientItem>!
+    private var diffableDataSource: UICollectionViewDiffableDataSource<diffableSection, diffableItem>!
+    private var snapshot: NSDiffableDataSourceSnapshot<diffableSection, diffableItem>!
     private var isShowingFloating = false
-    private var selectedMaterials = [Item]() {
+    private let coredataManager = CoreDataManager.shared
+    private var datum: [diffableItem] = []
+    
+    private var selectedIngredients = [diffableItem]() {
         didSet {
             configureFloatingStatus()
         }
     }
     
-    private var sections: [IngredientSection: [IngredientItem]] = [
-        .채소: [], .과일: [], .닭고기: [], .돼지고기: [], .소고기: [], .부재료: [], .통조림: [], .견과류: [], .조미료: []
-    ]
+    var completion: (diffableItem, StorageType) -> () = {(_, _) in}
     
     // MARK: - Views
     private let emptyTextLabel: UILabel = {
@@ -65,31 +68,34 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
         $0.configureMainButton(style: .보관하기,
                                backgroundColor: .secondarySystemFill)
         $0.isHidden = false
-        $0.addButtonAction(UIAction { [unowned self] action in self.controlFloating() })
+        $0.delegate = self
         return $0
     }(FloatingHStack())
     
-    private let 상온레이어: FloatingHStack = {
+    private lazy var 상온레이어: FloatingHStack = {
         $0.configureSubLabel(style: .상온보관)
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(style: .상온보관,
                               foregroundColor: .storageRed)
+        $0.delegate = self
         return $0
     }(FloatingHStack())
     
-    private let 냉장레이어: FloatingHStack = {
+    private lazy var 냉장레이어: FloatingHStack = {
         $0.configureSubLabel(style: .냉장보관)
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(style: .냉장보관,
                               foregroundColor: .storageSkyBlue)
+        $0.delegate = self
         return $0
     }(FloatingHStack())
     
-    private let 냉동레이어: FloatingHStack = {
+    private lazy var 냉동레이어: FloatingHStack = {
         $0.configureSubLabel(style: .냉동보관)
         $0.configureIsEnabled(isEnabled: false)
         $0.configureSubButton(style: .냉동보관,
                               foregroundColor: .storageBlue)
+        $0.delegate = self
         return $0
     }(FloatingHStack())
     
@@ -112,35 +118,35 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
     }(UIButton(configuration: .plain()))
     
     // MARK: - LifeCycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        attribute()
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
         
-        addSubviews()
-
+        hideKeyboard()
     }
     
-    // FIXME: UIKeyboarLayoutGuide를 적용한 화면에서 일부 버그가 발생하는 관계로, 임시로 viewWillAppear에 적용.
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        layout()
+    deinit {
+        removeKeyboardNotification()
     }
     
     // MARK: - Attribute
-    private func attribute() {
-        view.backgroundColor = .systemBackground
+    @available(*, unavailable)
+    override func attribute() {
+        super.attribute()
+        
+        datum = coredataManager.fetchIngredientSearchItem()
         
         configureNavigation()
         configureCollectionView()
         createDataSource()
         performSnapshot()
+        registerKeyboardNotification()
         
-        shouldHiddenCollectionView(sections.values.isEmpty)
+        shouldHiddenCollectionView(datum.isEmpty)
     }
     
     // MARK: - Layout
-    private func addSubviews() {
+    @available(*, unavailable)
+    override func addSubviews() {
         view.addSubview(emptyTextLabel)
         view.addSubview(collectionView)
         view.addSubview(searchBar)
@@ -153,7 +159,8 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
         vFloatingStackView.addArrangedSubview(보관레이어)
     }
     
-    private func layout() {
+    @available(*, unavailable)
+    override func layout() {
         let searchBarHeight = 50
         
         emptyTextLabel.snp.makeConstraints {
@@ -171,14 +178,14 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
         searchBar.snp.makeConstraints {
             $0.height.equalTo(searchBarHeight)
             $0.left.equalTo(view.safeAreaLayoutGuide)
-            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide)
         }
         
         registButton.snp.makeConstraints {
             $0.height.equalTo(searchBarHeight)
             $0.left.equalTo(searchBar.snp.right)
             $0.right.equalTo(view.safeAreaLayoutGuide)
-            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top)
+            $0.bottom.equalTo(view.safeAreaLayoutGuide)
             $0.width.equalTo(100)
         }
         
@@ -194,28 +201,95 @@ final class MaterialAdditionViewController: UIViewController, Navigationable {
 }
 
 
-// MARK: - NavigationBar
-extension MaterialAdditionViewController {
+// MARK: - Navigation
+extension IngredientAdditionViewController {
     private func configureNavigation() {
         navigationItem.title = "식재료 찾기"
         
         backButtonItem()
         rightBarButtonItem(systemName: "xmark", #selector(dismissViewController))
     }
-}
-
-
-// MARK: - Methods
-extension MaterialAdditionViewController {
+    
+    private func moveToRegistViewController() {
+        let vc = IngredientRegistViewController()
+        let text = searchBar.text
+        vc.configureIngredientName(text ?? "")
+        vc.storeIngredientNames(datum.map { $0.name } )
+        vc.completion = { item in
+            self.datum.append(item)
+            self.datum.sort(by: {$0.name < $1.name})
+            
+            self.collectionView.reloadData()
+            self.performSnapshot()
+        }
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
     @objc private func dismissViewController() {
         dismiss(animated: true)
     }
+}
+
+
+// MARK: - Keyboard Observer
+extension IngredientAdditionViewController {
+    private func findSafeAreaBottomInset() -> CGFloat {
+        guard let safeAreaBottom = windowScene?.keyWindow?.safeAreaInsets.bottom else { return 0 }
+        
+        return safeAreaBottom
+    }
     
-    private func controlFloating() {
-        if isShowingFloating {
-            closeFloating()    // 플로팅 닫기
+    @objc private func registerKeyboardNotification() {
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillShow),
+                                               name: UIResponder.keyboardWillShowNotification,
+                                               object: nil)
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(keyboardWillHide),
+                                               name: UIResponder.keyboardWillHideNotification,
+                                               object: nil)
+    }
+    
+    private func removeKeyboardNotification() {
+        NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func keyboardWillShow(_ notification: Notification) {
+        if let keyboardFrame = (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue {
+            let safeAreaBottomInset = findSafeAreaBottomInset()
+            let keyboardHeight = -keyboardFrame.height+safeAreaBottomInset
+            UIView.animate(withDuration: 0.3) {
+                self.searchBar.transform = CGAffineTransform(translationX: 0, y: keyboardHeight)
+                self.registButton.transform = CGAffineTransform(translationX: 0, y: keyboardHeight)
+                self.vFloatingStackView.transform = CGAffineTransform(translationX: 0, y: keyboardHeight)
+                self.collectionView.transform = CGAffineTransform(translationX: 0, y: keyboardHeight)
+            }
+        }
+    }
+    
+    @objc private func keyboardWillHide(_ notification: Notification) {
+        self.searchBar.transform = .identity
+        self.registButton.transform = .identity
+        self.vFloatingStackView.transform = .identity
+        self.collectionView.transform = .identity
+    }
+}
+
+
+// MARK: - Floating
+extension IngredientAdditionViewController: FloatingHstackDelegate {
+    func touchButton(action: UIAction, label: UILabel) {
+        if let text = label.text,
+           let style = StorageType(rawValue: text) {
+            
+            selectedIngredients.forEach { ingredient in
+                coredataManager.storeIngredient(name: ingredient.name, storage: style.text)
+                completion(ingredient, style)
+            }
+            
+            closeFloating()
         } else {
-            openFloating()     // 플로팅 열기
+            isShowingFloating ? closeFloating() : openFloating()
         }
     }
     
@@ -243,8 +317,7 @@ extension MaterialAdditionViewController {
                         stack.configureSubLabel(isHidden: true) // 모든 레이블 숨기는 동작
                         
                         if i != 0 {                          // 보관레이어는 동작에서 제외
-                            stack.alpha = 0                  // 자연스럽게 사라지기 위한 설정
-                            stack.isHidden = true            // 플로팅 버튼 숨기는 동작
+                            stack.disappear(isAlpha: true)
                             stack.configureIsEnabled(isEnabled: false)
                         }
                     }
@@ -292,7 +365,6 @@ extension MaterialAdditionViewController {
             case false:
                 // TODO: 알림창 띄우는 기능 필요
                 debugPrint("알 수 없는 에러가 발생했습니다. 다시 시도해주세요")
-                break
             }
         }
     }
@@ -304,13 +376,17 @@ extension MaterialAdditionViewController {
         generator.prepare()
         generator.impactOccurred()
     }
-    
-    private func moveToRegistViewController() {
-        let vc = MaterialRegistViewController()
-        let text = searchBar.text
-        vc.configureMaterialName(text ?? "")
-        
-        navigationController?.pushViewController(vc, animated: true)
+
+    private func configureFloatingStatus() {
+        if selectedIngredients.isEmpty {
+            보관레이어.configureIsEnabled(isEnabled: false)
+            보관레이어.configureMainButton(style: .보관하기,
+                                      backgroundColor: .secondarySystemFill)
+        } else {
+            보관레이어.configureIsEnabled(isEnabled: true)
+            보관레이어.configureMainButton(style: .보관하기,
+                                      backgroundColor: .darkText)
+        }
     }
     
     private func shouldHiddenCollectionView(_ condition: Bool) {
@@ -322,23 +398,11 @@ extension MaterialAdditionViewController {
             emptyTextLabel.isHidden = true
         }
     }
-    
-    private func configureFloatingStatus() {
-        if selectedMaterials.isEmpty {
-            보관레이어.configureIsEnabled(isEnabled: false)
-            보관레이어.configureMainButton(style: .보관하기,
-                                      backgroundColor: .secondarySystemFill)
-        } else {
-            보관레이어.configureIsEnabled(isEnabled: true)
-            보관레이어.configureMainButton(style: .보관하기,
-                                      backgroundColor: .darkText)
-        }
-    }
 }
 
 
 // MARK: - Keyboardable
-extension MaterialAdditionViewController: Keyboardable {
+extension IngredientAdditionViewController: Keyboardable {
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         hideKeyboard()
     }
@@ -346,14 +410,14 @@ extension MaterialAdditionViewController: Keyboardable {
 
 
 // MARK: - UICollectionViewDelegateFlowLayout
-extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
+extension IngredientAdditionViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .init())
         hideKeyboard()
         
-        if let (sectionId, itemId) = self.findIndex(indexPath) {
-            sections[sectionId]![itemId].isSelectedToggle()
-            selectedMaterials.append(sections[sectionId]![itemId])
+        if let itemId = self.findIndex(indexPath) {
+            datum[itemId].isSelectedToggle()
+            selectedIngredients.append(datum[itemId])
         }
     }
     
@@ -361,9 +425,9 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
         collectionView.deselectItem(at: indexPath, animated: true)
         hideKeyboard()
         
-        if let (sectionId, itemId) = self.findIndex(indexPath) {
-            sections[sectionId]![itemId].isSelectedToggle()
-            selectedMaterials.removeAll(where: {$0.name == sections[sectionId]![itemId].name})
+        if let itemId = self.findIndex(indexPath) {
+            datum[itemId].isSelectedToggle()
+            selectedIngredients.removeAll(where: {$0.name == datum[itemId].name})
         }
     }
     
@@ -374,27 +438,30 @@ extension MaterialAdditionViewController: UICollectionViewDelegateFlowLayout {
 
 
 // MARK: - Diffable CollectionView
-extension MaterialAdditionViewController: Compositionable {
-    private func configureCollectionView() {
+extension IngredientAdditionViewController: Compositionable {
+    func configureCollectionView() {
         let layout = createCompositionalLayout(columns: 2,
                                                height: 40,
                                                headerElementKind: Self.sectionHeaderElementKind)
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.allowsMultipleSelection = true
         collectionView.delegate = self
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressGestureRecognized))
+        collectionView.addGestureRecognizer(longPressGesture)
     }
     
-    private func createDataSource() {
+    func createDataSource() {
         let cellRegistration = cellRegistration()
         let headerRegistration = headerRegistration()
         
         // cellForRowAt과 같은 역할
-        self.diffableDataSource = diffableDataSourceAlias(collectionView: collectionView, cellProvider: { collectionView, indexPath, material in
+        self.diffableDataSource = UICollectionViewDiffableDataSource<diffableSection, diffableItem>(collectionView: collectionView, cellProvider: { collectionView, indexPath, ingredient in
             
             let cell = collectionView.dequeueConfiguredReusableCell(
                 using: cellRegistration,
                 for: indexPath,
-                item: material
+                item: ingredient
             )
             
             return cell
@@ -418,33 +485,36 @@ extension MaterialAdditionViewController: Compositionable {
     }
     
     func performSnapshot(with searchText: String = "") {
-        snapshot = NSDiffableDataSourceSnapshot<IngredientSection, IngredientItem>()
+        snapshot = NSDiffableDataSourceSnapshot<diffableSection, diffableItem>()
         
-        for section in IngredientSection.allCases {
-            guard let items = sections[section] else { continue }
-            
-            // 검색이 비어있으면, 전체 보여주기
-            if searchText == ""  {
-                snapshot.appendSections([section])
-                snapshot.appendItems(items, toSection: section)
-                continue
-            }
-            
-            // 검색데이터 필터링.
-            let filteredMaterials = items.filter { item in
-                item.name.contains(searchText ?? "")
-            }
-            
-            // 검색한 재료가 있는 섹션은, 재료를 보여준다.
+        // section 순서로 재료를 분류하기 위함.
+        for section in diffableSection.allCases {
             snapshot.appendSections([section])
-            snapshot.appendItems(filteredMaterials, toSection: section)
+            
+            for data in datum where data.category == section.title {
+                // 검색이 비어있으면, 전체 보여주기
+                if searchText == "" {
+                    snapshot.appendItems([data], toSection: section)
+                    continue
+                }
+                
+                // 검색어를 포함하는 재료명만
+                if data.name.contains(searchText) {
+                    snapshot.appendItems([data], toSection: section)
+                }
+            }
+            
+            // item이 없는 section 제거.
+            if snapshot.numberOfItems(inSection: section) == 0 {
+                snapshot.deleteSections([section])
+            }
         }
         
         diffableDataSource.apply(snapshot)
     }
 }
 
-extension MaterialAdditionViewController {
+extension IngredientAdditionViewController {
     private func headerRegistration() -> UICollectionView.SupplementaryRegistration<HeaderCell>{
         return UICollectionView.SupplementaryRegistration<HeaderCell>(elementKind: Self.sectionHeaderElementKind){ [unowned self] headerView, elementKind, indexPath in
             
@@ -453,40 +523,77 @@ extension MaterialAdditionViewController {
         }
     }
     
-    private func cellRegistration() -> UICollectionView.CellRegistration<MaterialCell, IngredientItem>{
-        return UICollectionView.CellRegistration<MaterialCell, IngredientItem> { [unowned self] cell, indexPath, material in
+    private func cellRegistration() -> UICollectionView.CellRegistration<IngredientCell, diffableItem>{
+        return UICollectionView.CellRegistration<IngredientCell, diffableItem> { [unowned self] cell, indexPath, ingredient in
             
             cell.configureCell(
                 image: nil,
-                name: material.name,
-                pageType: .addtion
+                name: ingredient.name,
+                pageType: .addition
             )
             
             DispatchQueue.main.async {
-                if let (sectionId, itemId) = self.findIndex(indexPath) {
-                    let isSelected = self.sections[sectionId]![itemId].isSelected
+                if let itemId = self.findIndex(indexPath) {
+                    let isSelected = self.datum[itemId].isSelected
                     cell.configureSelected(isSelected)
                 }
             }
         }
     }
     
-    private func findIndex(_ indexPath: IndexPath) -> (sectionId: IngredientSection, itemId: Int)? {
+    private func findIndex(_ indexPath: IndexPath) -> Int? {
         let sectionId = snapshot.sectionIdentifiers[indexPath.section]
         let items = snapshot.itemIdentifiers(inSection: sectionId)
         let item = items[indexPath.item]
+        guard let itemId = datum.firstIndex(of: item) else { return nil }
         
-        guard let itemId = self.sections[sectionId]?.firstIndex(where: { $0.name == item.name }) else { return nil }
-        
-        return (sectionId, itemId)
+        return itemId
+    }
+    
+    @objc private func longPressGestureRecognized(_ sender: UILongPressGestureRecognizer) {
+        if sender.state == .began {
+            guard let indexPath = collectionView.indexPathForItem(at: sender.location(in: self.collectionView)) else { return }
+            let section = indexPath.section
+            let row = indexPath.row
+            let category = diffableSection.allCases[section]
+            
+            let item = datum.filter({$0.category == category.title})[row]
+            let name = item.name
+            
+            showAlert(title: "안내 메시지",
+                      message: """
+                               삭제 시, 보관 중인 재료에서도 사라집니다.
+                               \(name)을/를 삭제하시겠습니까?
+                               """,
+                      yesHandler: { [weak self] yesAction in
+                guard let self = self else { return }
+                
+                // TODO: Repository와 ViewModel(Reactor)로 구조를 분리하고, 데이터를 하나로 관리하도록 수정.
+                self.datum.remove(at: row) // 보여지는 데이터. Diffable 새로고침용. 선택된 cell 중, 마지막으로 선택한 재료를 제거함.
+                self.coredataManager.deleteIngredient(name) // 실제 재료 데이터 소거.
+                
+                StorageType.allCases.forEach { type in
+                    self.completion(item, type)
+                }
+                
+                self.performSnapshot()
+                
+                removeSelectedIngredient(name)
+            })
+        }
+    }
+    
+    private func removeSelectedIngredient(_ name: String) {
+        guard let index = self.selectedIngredients.firstIndex(where: {$0.name == name}) else { return }
+        self.selectedIngredients.remove(at: index)
     }
 }
 
+
 // MARK: - UISearchBarDelegate
-extension MaterialAdditionViewController: UISearchBarDelegate {
+extension IngredientAdditionViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        var searchText = searchText.lowercased()                        // 대소문자 무시
-        searchText = searchText.replacingOccurrences(of: " ", with: "") // 띄어쓰기 무시
+        let searchText = searchText.replacingOccurrences(of: " ", with: "") // 띄어쓰기 무시
         
         performSnapshot(with: searchText)
     }
