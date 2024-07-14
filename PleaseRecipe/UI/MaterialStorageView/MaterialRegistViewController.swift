@@ -117,6 +117,8 @@ final class IngredientRegistViewController: BaseViewController, NavigationStyle 
         $0.distribution = .equalSpacing
         $0.isUserInteractionEnabled = true
         
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(presentHalfModal))
+        $0.addGestureRecognizer(tapGesture)
         return $0
     }(UIStackView())
     
@@ -335,18 +337,26 @@ extension IngredientRegistViewController {
         navigationController?.popViewController(animated: true)
     }
     
+    @objc private func presentHalfModal() {
+        let vc = CategorySelectViewController()
+        let navi = UINavigationController(rootViewController: vc)
+        navi.modalPresentationStyle = .pageSheet
         
-        material.name = name
-        
-        if useDateText.isEmpty {
-            material.useDate = Int.max // 무기한
-        } else {
-            guard let useDate = Int(useDateText.components(separatedBy: "-")[1]) else { return }
-            material.useDate = useDate // 소비기한 있음
+        vc.closure = { category in
+            self.categoryLabel.configureImageLabel(
+                titleImage: .folder,
+                text: "식품 분류: \(category)"
+            )
         }
         
-        material.category = category
+        if let sheet = navi.sheetPresentationController {
+            sheet.detents = [.medium()]     // custom은 iOS 16이상부터 가능. 아직 커스텀 적용할 필요성은 없으니 미적용.
+            sheet.prefersGrabberVisible = true
+        }
         
+        present(navi, animated: true)
+    }
+    
         
         let beforeVC = navigationController?.presentingViewController as! MaterialAdditionViewController
         
