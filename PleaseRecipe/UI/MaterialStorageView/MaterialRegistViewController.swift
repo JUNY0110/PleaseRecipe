@@ -1,5 +1,5 @@
 //
-//  MaterialRegistViewController.swift
+//  IngredientRegistViewController.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 5/30/24.
@@ -10,21 +10,27 @@ import UIKit
 import SnapKit
 
 
-final class MaterialRegistViewController: UIViewController {
+final class IngredientRegistViewController: BaseViewController, NavigationStyle {
     
     // MARK: - Properties
     private let time = TimeSection.allCases
+    private var ingredientNames = [String]()
     private var sectionRow = 0
     private var itemRow = 0
-    private var material: IngredientItem? = nil
+    private var registeringItem: IngredientRegisterRequestDTO = .init(image: nil, name: "", useDate: 0, category: "")
+    private let coredataManager = CoreDataManager.shared
+    private var useDateCache = 1
+    private var list: [Int] = [1]
+    var completion: (IngredientSearchItem) -> () = { _ in }
     
     // MARK: - Views
     private let imageSelectionLabel: UILabel = {
         $0.text = "이미지 선택"
-        $0.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        $0.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         return $0
     }(UILabel())
     
+    // 이미지 셀
     private lazy var collectionView: UICollectionView = {
         let flowLayout = UICollectionViewFlowLayout()
         flowLayout.scrollDirection = .vertical
@@ -38,13 +44,7 @@ final class MaterialRegistViewController: UIViewController {
     
     private let containerView = UIView()
     
-    private let materialNameLabel: UILabel = {
-        $0.text = "재료명"
-        $0.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
-        return $0
-    }(UILabel())
-    
-    private lazy var materialNameTextField: UITextField = {
+    private lazy var ingredientNameTextField: UITextField = {
         $0.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         $0.backgroundColor = .secondarySystemFill
         $0.placeholder = "예시) 매실"
@@ -61,190 +61,197 @@ final class MaterialRegistViewController: UIViewController {
         return $0
     }(UITextField())
     
-    private let useDateLabel: UILabel = {
-        $0.text = "소비기한"
-        $0.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+    // 소비기한(레이블, 토글)
+    private let useDateTopHStack: UIStackView = {
+        $0.axis = .horizontal
+        $0.alignment = .fill
+        $0.backgroundColor = .systemBackground
+        return $0
+    }(UIStackView())
+    
+    private lazy var useDateTitleLabel: UILabel = {
+        $0.configureImageLabel(titleImage: .hourglass, text: "소비기한: \(useDateCache)일 이내")
+        $0.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         return $0
     }(UILabel())
     
+    private lazy var useDateSwitch: CustomSwitch = {
+        $0.delegate = self
+        return $0
+    }(CustomSwitch())
+    
+    // 소비기한(날짜 버튼, 피커 뷰)
+    private let useDateOutsideStack: UIStackView = {
+        $0.axis = .vertical
+        return $0
+    }(UIStackView())
+    
+    // 소비기한(날짜버튼들)
+    private let useDateBottomHStack: UIStackView = {
+        $0.axis = .horizontal
+        return $0
+    }(UIStackView())
+    
+    private let useDateSetOneDay = UseDateLabel(useDate: .oneDay)
+    private let useDateSetThreeDay = UseDateLabel(useDate: .threeDay)
+    private let useDateSetOneWeek = UseDateLabel(useDate: .oneWeek)
+    private let useDateSetTwoWeek = UseDateLabel(useDate: .twoWeek)
+    private let useDateSetDirectSetting = UseDateLabel(useDate: .directSetting)
+    private let spacerView = UIView()
+    
+    private lazy var usedateLabels = [useDateSetOneDay, useDateSetThreeDay, useDateSetOneWeek, useDateSetTwoWeek, useDateSetDirectSetting]
+    
     private lazy var pickerView: UIPickerView = {
+        $0.layer.cornerRadius = 8
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = UIColor.systemGray5.cgColor
+        $0.disappear(isAlpha: false)
+        
         $0.delegate = self
         $0.dataSource = self
         return $0
     }(UIPickerView())
     
-    private lazy var useDateTextField: CustomTextField = {
-        $0.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        $0.backgroundColor = .secondarySystemFill
-        $0.placeholder = "선택하지 않으시면 '14일'을 기본값으로 합니다."
-        $0.borderStyle = .roundedRect
-        $0.autocorrectionType = .no
-        $0.inputView = pickerView
+    private lazy var categoryHStackView: UIStackView = {
+        $0.axis = .horizontal
+        $0.distribution = .equalSpacing
+        $0.isUserInteractionEnabled = true
         
-        $0.leftView = UIView()
-        $0.leftViewMode = .always
         return $0
-    }(CustomTextField())
+    }(UIStackView())
     
     private let categoryLabel: UILabel = {
-        $0.text = "식품 분류"
-        $0.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        $0.configureImageLabel(titleImage: .folder, text: "식품 분류: 없음")
+        $0.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         return $0
     }(UILabel())
     
-    private lazy var categoryToggleLabel: UILabel = {
-        $0.text = "  식재료"
-        $0.font = UIFont.systemFont(ofSize: 16, weight: .regular)
-        $0.isUserInteractionEnabled = true
-        $0.backgroundColor = .secondarySystemFill
-        $0.layer.cornerRadius = 4
-        $0.clipsToBounds = true
-        
-        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(toggleCategory))
-        $0.addGestureRecognizer(tapGestureRecognizer)
+    private let chevronRightView: UIImageView = {
+        $0.image = UIImage(systemName: "chevron.right")
+        $0.tintColor = .systemGray2
+        $0.contentMode = .scaleAspectFit
         return $0
-    }(UILabel())
-    
-    private lazy var cancelButton: UIButton = {
-        $0.configuration?.attributedTitle = .configureTitle(.cancel, size: 16, weight: .semibold)
-        $0.configuration?.baseForegroundColor = .gray
-        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) },
-                     for: .touchUpInside)
-        return $0
-    }(UIButton(configuration: .gray()))
-    
-    private lazy var additionButton: UIButton = {
-        $0.configuration?.attributedTitle = .configureTitle(.addition, size: 16, weight: .semibold)
-        $0.configuration?.baseForegroundColor = .white
-        $0.configuration?.background.backgroundColor = .secondarySystemFill
-        $0.isEnabled = false
-        $0.addAction(UIAction { [unowned self] action in self.dismissViewController(action) },
-                     for: .touchUpInside)
-        return $0
-    }(UIButton(configuration: .filled()))
-    
-    // MARK: - LifeCycle
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        attribute()
-        
-        addSubviews()
-        
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        
-        layout()
-    }
-    
+    }(UIImageView())
+
     // MARK: - Attribute
-    private func attribute() {
-        view.backgroundColor = .systemBackground
+    @available(*, unavailable)
+    override func attribute() {
+        super.attribute()
         
-        collectionView.register(MaterialCell.self, forCellWithReuseIdentifier: MaterialCell.identifier)
+        collectionView.register(IngredientCell.self, forCellWithReuseIdentifier: IngredientCell.identifier)
         
         configureNavigation()
-        configurePickerToolBar()
+        configureUseDateLabel()
     }
     
     private func configureNavigation() {
         navigationItem.title = "재료 등록하기"
+        
+        rightBarButtonItem(systemName: "checkmark", #selector(dismissViewController), .systemGray2)
+        navigationItem.rightBarButtonItem?.isEnabled = false
+    }
+    
+    private func configureUseDateLabel() {
+        usedateLabels.forEach { label in
+            label.delegate = self
+        }
+        
+        usedateLabels[0].isSelected = true
     }
     
     // MARK: - Layout
-    private func addSubviews() {
+    @available(*, unavailable)
+    override func addSubviews() {
         view.addSubview(imageSelectionLabel)
         view.addSubview(collectionView)
-        view.addSubview(userInputView)
-        userInputView.addSubview(materialNameLabel)
-        userInputView.addSubview(materialNameTextField)
-        userInputView.addSubview(useDateLabel)
-        userInputView.addSubview(useDateTextField)
-        userInputView.addSubview(categoryLabel)
-        userInputView.addSubview(categoryToggleLabel)
-        view.addSubview(cancelButton)
-        view.addSubview(additionButton)
+        
+        view.addSubview(containerView)
+        containerView.addSubview(ingredientNameTextField)
+
+        useDateOutsideStack.addArrangedSubview(useDateTopHStack)
+        useDateTopHStack.addArrangedSubview(useDateTitleLabel)
+        useDateTopHStack.addArrangedSubview(useDateSwitch)
+        
+        containerView.addSubview(useDateOutsideStack)
+        
+        useDateOutsideStack.addArrangedSubview(useDateBottomHStack)
+        useDateBottomHStack.addArrangedSubview(useDateSetOneDay)
+        useDateBottomHStack.addArrangedSubview(useDateSetThreeDay)
+        useDateBottomHStack.addArrangedSubview(useDateSetOneWeek)
+        useDateBottomHStack.addArrangedSubview(useDateSetTwoWeek)
+        useDateBottomHStack.addArrangedSubview(useDateSetDirectSetting)
+        useDateBottomHStack.addArrangedSubview(spacerView)
+        
+        useDateOutsideStack.addArrangedSubview(pickerView)
+        
+        containerView.addSubview(categoryHStackView)
+        categoryHStackView.addArrangedSubview(categoryLabel)
+        categoryHStackView.addArrangedSubview(chevronRightView)
     }
     
-    private func layout() {
+    @available(*, unavailable)
+    override func layout() {
         imageSelectionLabel.snp.makeConstraints {
             $0.top.equalTo(view.safeAreaLayoutGuide)
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(24)
             $0.height.equalTo(20)
         }
-        
+
         collectionView.snp.makeConstraints {
             $0.top.equalTo(imageSelectionLabel.snp.bottom).offset(4)
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(16)
             $0.height.equalTo(200)
         }
         
-        userInputView.snp.makeConstraints {
+        containerView.snp.makeConstraints {
             $0.top.equalTo(collectionView.snp.bottom).offset(24)
             $0.horizontalEdges.equalTo(view.safeAreaLayoutGuide).inset(24)
             $0.bottom.equalToSuperview()
         }
         
-        materialNameLabel.snp.makeConstraints {
-            $0.top.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(20)
-        }
-        
-        materialNameTextField.snp.makeConstraints {
-            $0.top.equalTo(materialNameLabel.snp.bottom).offset(4)
+        ingredientNameTextField.snp.makeConstraints {
+            $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
             $0.height.equalTo(30)
         }
         
-        useDateLabel.snp.makeConstraints {
-            $0.top.equalTo(materialNameTextField.snp.bottom).offset(4)
+        useDateOutsideStack.snp.makeConstraints {
+            $0.top.equalTo(ingredientNameTextField.snp.bottom).offset(16)
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(20)
         }
         
-        useDateTextField.snp.makeConstraints {
-            $0.top.equalTo(useDateLabel.snp.bottom).offset(4)
+        useDateTopHStack.snp.makeConstraints {
+            $0.top.equalToSuperview()
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(30)
         }
         
-        categoryLabel.snp.makeConstraints {
-            $0.top.equalTo(useDateTextField.snp.bottom).offset(4)
+        useDateSwitch.snp.makeConstraints {
+            $0.width.equalTo(40)
+        }
+        
+        usedateLabels.forEach { label in
+            label.snp.makeConstraints {
+                $0.width.equalTo(label.intrinsicContentSize.width+30)
+                $0.height.equalTo(label.intrinsicContentSize.height+10)
+            }
+        }
+        
+        useDateBottomHStack.spacing = 10
+        
+        pickerView.snp.makeConstraints {
+            $0.height.equalTo(200)
+        }
+        
+        useDateOutsideStack.spacing = 12
+        
+        categoryHStackView.snp.makeConstraints {
+            $0.top.equalTo(useDateOutsideStack.snp.bottom)
             $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(20)
-        }
-        
-        categoryToggleLabel.snp.makeConstraints {
-            $0.top.equalTo(categoryLabel.snp.bottom).offset(4)
-            $0.horizontalEdges.equalToSuperview()
-            $0.height.equalTo(30)
-        }
-        
-        cancelButton.snp.makeConstraints {
-            $0.leading.equalTo(view.safeAreaLayoutGuide).offset(16)
-            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top).offset(-8)
-            $0.width.equalTo(100)
-            $0.height.equalTo(50)
-        }
-        
-        additionButton.snp.makeConstraints {
-            $0.trailing.equalTo(view.safeAreaLayoutGuide).offset(-16)
-            $0.bottom.equalTo(view.keyboardLayoutGuide.snp.top).offset(-8)
-            $0.leading.equalTo(cancelButton.snp.trailing).offset(10)
             $0.height.equalTo(50)
         }
     }
 }
 
-// MARK: - ConfigureViewController
-extension MaterialRegistViewController {
-    @objc func toggleCategory() {
-        if categoryToggleLabel.text == "  식재료" {
-            categoryToggleLabel.text = "  조미료"
-        } else {
-            categoryToggleLabel.text = "  식재료"
         }
     }
     
@@ -384,7 +391,7 @@ extension MaterialRegistViewController: UIPickerViewDelegate {
     }
 }
 
-extension MaterialRegistViewController: UIPickerViewDataSource {
+extension IngredientRegistViewController: UIPickerViewDataSource {
     func numberOfComponents(in pickerView: UIPickerView) -> Int {
         return 2
     }
@@ -403,7 +410,7 @@ extension MaterialRegistViewController: UIPickerViewDataSource {
 
 
 // MARK: - UITextFieldDelegate
-extension MaterialRegistViewController: UITextFieldDelegate {
+extension IngredientRegistViewController: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         
         // TODO: 한글은 최대 6자, 영어 등 외국어는 따로 처리 필요.
@@ -424,7 +431,7 @@ extension MaterialRegistViewController: UITextFieldDelegate {
 
 
 // MARK: - UICollectionViewDelegateFlowLayout
-extension MaterialRegistViewController: UICollectionViewDelegateFlowLayout {
+extension IngredientRegistViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let columns: CGFloat = 5
         let spacing: CGFloat = 12
@@ -435,10 +442,15 @@ extension MaterialRegistViewController: UICollectionViewDelegateFlowLayout {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MaterialCell.identifier, for: indexPath) as! MaterialCell
         collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .init()) // 이미지 선택 시 isSelected = true
-        material.image = cell.image?.jpegData(compressionQuality: 1.0) ?? Data()
         
+        let ingredient = IngredientRegistData.allCases[indexPath.row]
+        
+        registeringItem.changeImage(ingredient.image)
+        categoryLabel.configureImageLabel(
+            titleImage: .folder,
+            text: "식품 분류: \(IngredientRegistData.allCases[indexPath.row].category)"
+        )
         editingAdditionButtonStatus()
         // override isSelected는 일반적으로 직접 조작하지 않고, 이와같이 간접적으로 다루는 것을 권장한다.
         // 단순하게 indexPath의 cell에 대한 설정을 부여할 경우, didSelectItemAt만으로는 Cell의 isSelected를 인지하지 못하므로, isSelected를 조작하는 메서드를 사용해줘야 함.
@@ -451,15 +463,15 @@ extension MaterialRegistViewController: UICollectionViewDelegateFlowLayout {
 }
 
 // MARK: - UICollectionViewDataSource
-extension MaterialRegistViewController: UICollectionViewDataSource {
+extension IngredientRegistViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return MaterialLiteral.allCases.count
+        return IngredientRegistData.allCases.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MaterialCell.identifier, for: indexPath) as! MaterialCell
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: IngredientCell.identifier, for: indexPath) as! IngredientCell
         
-        cell.configureCell(image: MaterialLiteral.allCases[indexPath.row].image,
+        cell.configureCell(image: IngredientRegistData.allCases[indexPath.row].image,
                            pageType: .regist)
         
         return cell
@@ -467,7 +479,7 @@ extension MaterialRegistViewController: UICollectionViewDataSource {
 }
 
 // MARK: - Keyboardable
-extension MaterialRegistViewController: Keyboardable {
+extension IngredientRegistViewController: Keyboardable {
     public override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         hideKeyboard()
     }
