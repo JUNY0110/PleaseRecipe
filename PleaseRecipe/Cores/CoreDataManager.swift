@@ -125,12 +125,14 @@ final class CoreDataManager {
 extension CoreDataManager {
     private func initialSetup() {
         IngredientInfo.allCases.forEach { ingredient in
-            guard let imageData = ingredient.image.jpegData(compressionQuality: 1.0) else { return }
+            let ingredientData: IngredientRegisterRequestDTO = .init(
+                image: ingredient.image,
+                name: ingredient.name,
+                useDate: 0,
+                category: ingredient.category.title
+            )
             
-            registIngredient(imageData: imageData,
-                             name: ingredient.name,
-                             useDate: 0,
-                             category: ingredient.category.title)
+            registIngredient(ingredientData)
         }
     }
 }
