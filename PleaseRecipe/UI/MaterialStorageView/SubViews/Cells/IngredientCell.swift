@@ -1,5 +1,5 @@
 //
-//  MaterialCell.swift
+//  IngredientCell.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 5/29/24.
@@ -9,25 +9,19 @@ import UIKit
 
 import SnapKit
 
-enum PageType {
-    case storage
-    case addtion
-    case regist
-}
 
-final class MaterialCell: UICollectionViewCell {
+final class IngredientCell: UICollectionViewCell {
     
     // MARK: - Properities
-    static let identifier = "MaterialCell"
+    static let identifier = "IngredientCell"
     var image: UIImage?
     
-    private var pageType: PageType = .storage {
+    private lazy var pageType: PageType = .storage {
         didSet {
-            // TODO: isHidden을 다시 안 바꿔도 괜찮은지 확인을 위한 TODO 주석
             switch pageType {
             case .storage:
                 break
-            case .addtion:
+            case .addition:
                 imageView.isHidden = true
                 nameLabel.font = UIFont.systemFont(ofSize: 14, weight: .regular)
             case .regist:
@@ -50,17 +44,16 @@ final class MaterialCell: UICollectionViewCell {
         return $0
     }(UIStackView())
     
-    private lazy var imageView: UIImageView = {
+    private let imageView: UIImageView = {
         $0.image = UIImage(systemName: "plus")
         $0.contentMode = .scaleAspectFit
         return $0
     }(UIImageView())
     
-    private lazy var nameLabel: UILabel = {
+    private let nameLabel: UILabel = {
         $0.text = "테스트"
         $0.textAlignment = .center
         $0.font = .systemFont(ofSize: 12, weight: .regular)
-        $0.numberOfLines = 1
         return $0
     }(UILabel())
     
@@ -90,6 +83,7 @@ final class MaterialCell: UICollectionViewCell {
         self.contentView.layer.cornerRadius = 8
         self.contentView.layer.borderColor = UIColor.secondarySystemBackground.cgColor
         self.contentView.layer.borderWidth = 1
+        
     }
     
     // MARK: - Layout
@@ -103,15 +97,19 @@ final class MaterialCell: UICollectionViewCell {
         vStackView.snp.makeConstraints {
             $0.edges.equalToSuperview().inset(4)
         }
+        
+        nameLabel.snp.makeConstraints {
+            $0.height.equalTo(nameLabel.intrinsicContentSize.height).priority(.high)
+        }
     }
 }
 
 // MARK: - Configure
-extension MaterialCell {
+extension IngredientCell {
     func configureCell(image: UIImage?, name: String = "", pageType: PageType) {
-        imageView.image = image
-        nameLabel.text = name
         self.pageType = pageType
+        self.imageView.image = image
+        self.nameLabel.text = name
     }
     
     func configureSelected(_ isSelected: Bool) {
@@ -128,5 +126,15 @@ extension MaterialCell {
                 self.contentView.layer.borderWidth = 1
             }
         }
+    }
+}
+
+
+// MARK: - Nested Types
+extension IngredientCell {
+    enum PageType {
+        case storage
+        case addition
+        case regist
     }
 }
