@@ -25,7 +25,7 @@ final class CoreDataManager {
         return container
     }()
     
-    private var context: NSManagedObjectContext {
+    var context: NSManagedObjectContext {
         return persistentContainer.viewContext
     }
     
@@ -51,26 +51,20 @@ final class CoreDataManager {
             }
         }
     }
-    
+
+
     // Material을 등록해서 AddtionView에 추가하는 코드
     func registIngredient(
-        imageData: Data,
-        name: String,
-        useDate: Int,
-        category: String
+        _ ingredient: IngredientRegisterRequestDTO
     ) {
-        let categoryObject = CDCategory(context: context)
-        categoryObject.title = category
-        
         let ingredientObject = CDIngredient(context: context)
-        ingredientObject.image = imageData
-        ingredientObject.useDate = Int32(useDate)
-        ingredientObject.name = name
-        
-        categoryObject.addToIngredients(ingredientObject)
+        ingredientObject.image = ingredient.fetchImage()!.pngData() // jpeg로 저장 시, 투명 배경이 반영되지 않음.
+        ingredientObject.useDate = Int32(ingredient.fetchUseDate())
+        ingredientObject.name = ingredient.fetchName()
+        ingredientObject.category = ingredient.fetchCategory()
         
         do {
-            try categoryObject.validateForInsert() // 데이터 타당성 검사
+            try ingredientObject.validateForInsert() // 데이터 타당성 검사
             return saveContext()
         } catch {
             context.rollback() // Context에 추가된 Material이 올바르지 않은 형태이면, 추가되기 이전 상태로 되돌림(Undo).

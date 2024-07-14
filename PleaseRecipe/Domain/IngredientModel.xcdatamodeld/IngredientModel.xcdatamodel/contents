@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22758" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
-    <entity name="Category" representedClassName="CDCategory" syncable="YES">
-        <attribute name="title" optional="YES" attributeType="String"/>
-        <relationship name="ingredients" optional="YES" toMany="YES" deletionRule="Cascade" ordered="YES" destinationEntity="Ingredient" inverseName="category" inverseEntity="Ingredient"/>
-    </entity>
     <entity name="Ingredient" representedClassName="CDIngredient" syncable="YES">
+        <attribute name="category" optional="YES" attributeType="String"/>
         <attribute name="image" optional="YES" attributeType="Binary"/>
         <attribute name="name" optional="YES" attributeType="String"/>
         <attribute name="useDate" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
-        <relationship name="category" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Category" inverseName="ingredients" inverseEntity="Category"/>
-        <relationship name="storage" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="Storage" inverseName="ingredients" inverseEntity="Storage"/>
+        <relationship name="storages" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Storage" inverseName="ingredient" inverseEntity="Storage"/>
     </entity>
     <entity name="Storage" representedClassName="CDStorage" syncable="YES">
         <attribute name="registDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="title" optional="YES" attributeType="String"/>
-        <relationship name="ingredients" optional="YES" toMany="YES" deletionRule="Nullify" ordered="YES" destinationEntity="Ingredient" inverseName="storage" inverseEntity="Ingredient"/>
+        <relationship name="ingredient" optional="YES" maxCount="1" deletionRule="Nullify" ordered="YES" destinationEntity="Ingredient" inverseName="storages" inverseEntity="Ingredient"/>
     </entity>
 </model>
