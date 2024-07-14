@@ -252,9 +252,56 @@ final class IngredientRegistViewController: BaseViewController, NavigationStyle 
     }
 }
 
+
+// MARK: - UseDateLabelDelegate
+extension IngredientRegistViewController: UseDateLabelDelegate {
+    func selectedLabel(_ label: UseDateLabel) {
+        usedateLabels.forEach {
+            if $0.text == label.text { // 선택한 탭 설정
+                $0.isSelected = true
+                
+                if label.text == "직접 설정" { // 선택한 탭이 `직접 설정` 일 때
+                    tappedDirectSettingLabel()
+                } else { // 선택한 탭이 `직접 설정`이 아닐 때\
+                    pickerView.alpha = 0
+                    
+                    tappedUsedateLabel(label)
+                    whenPickerViewIsShowing()
+                }
+                
+                registeringItem.changeUseDate(useDateCache)
+            } else { // 선택하지 않은 탭 설정
+                $0.isSelected = false
+            }
         }
     }
     
+    private func tappedDirectSettingLabel() {
+        UIView.animate(withDuration: 0.3) {
+            self.pickerView.appear(isAlpha: true)
+        } completion: { finished in
+            self.setupUseDateText(index: self.sectionRow,
+                                  label: self.useDateTitleLabel) // pickerView의 데이터를 Label에 반영
+        }
+    }
+    
+    private func tappedUsedateLabel(_ label: UseDateLabel) {
+        useDateCache = Int(label.text?.dropLast() ?? "") ?? 0 // 텍스트 임시 저장.
+        useDateTitleLabel.configureImageLabel(
+            titleImage: .hourglass,
+            text: "소비기한: \(label.text ?? "0일") 이내"
+        )  // 탭의 데이터를 Label에 반영
+    }
+    
+    private func whenPickerViewIsShowing() {
+        if !pickerView.isHidden {
+            UIView.animate(withDuration: 0.3) {
+                self.pickerView.isHidden = true
+            }
+        }
+    }
+}
+
     private func editingAdditionButtonStatus() {
         guard let text = materialNameTextField.text else { return }
         
