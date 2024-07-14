@@ -213,8 +213,9 @@ extension IngredientAdditionViewController {
     private func moveToRegistViewController() {
         let vc = IngredientRegistViewController()
         let text = searchBar.text
-        vc.configureIngredientName(text ?? "")
-        vc.storeIngredientNames(datum.map { $0.name } )
+        let names = datum.map { $0.name }
+        
+        vc.configureIngredientNames(text ?? "", names )
         vc.completion = { item in
             self.datum.append(item)
             self.datum.sort(by: {$0.name < $1.name})

@@ -302,20 +302,27 @@ extension IngredientRegistViewController: UseDateLabelDelegate {
     }
 }
 
+
+// MARK: - ConfigureViewController
+extension IngredientRegistViewController {
     private func editingAdditionButtonStatus() {
-        guard let text = materialNameTextField.text else { return }
+        guard let text = ingredientNameTextField.text else { return }
         
-        if text.isEmpty || material.image == nil { // 이미지를 선택하지 않았거나, 재료명을 입력하지 않으면 비활성화
-            additionButton.isEnabled = false
-            additionButton.configuration?.background.backgroundColor = .secondarySystemFill
+        // 이미지를 선택하지 않았거나, 재료명을 미입력, 이미 존재하는 재료명이면 비활성화
+        if text.isEmpty || registeringItem.fetchImage() == nil || ingredientNames.contains(text) {
+            navigationItem.rightBarButtonItem?.isEnabled = false
+            navigationItem.rightBarButtonItem?.tintColor = .systemGray2
         } else {
-            additionButton.isEnabled = true
-            additionButton.configuration?.background.backgroundColor = .mainRed
+            navigationItem.rightBarButtonItem?.isEnabled = true
+            navigationItem.rightBarButtonItem?.tintColor = .black
         }
+        
+        registeringItem.changeName(text)
     }
     
-    func configureMaterialName(_ name: String?) {
-        materialNameTextField.text = name
+    func configureIngredientNames(_ name: String, _ ingredientNames: [String]) {
+        self.ingredientNameTextField.text = name 
+        self.ingredientNames = ingredientNames // 이미 존재하는 재료명인지 확인을 위한 property
     }
 }
 
