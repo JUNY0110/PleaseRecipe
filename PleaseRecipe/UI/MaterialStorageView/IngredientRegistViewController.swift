@@ -17,7 +17,7 @@ final class IngredientRegistViewController: BaseViewController, NavigationStyle 
     private var ingredientNames = [String]()
     private var sectionRow = 0
     private var itemRow = 0
-    private var registeringItem: IngredientRegisterRequestDTO = .init(image: nil, name: "", useDate: 0, category: "")
+    private var registeringItem: IngredientRegisterRequestDTO = .init(image: nil, name: "", useDate: 0, category: "기타")
     private let coredataManager = CoreDataManager.shared
     private var useDateCache = 1
     private var list: [Int] = [1]
@@ -123,7 +123,7 @@ final class IngredientRegistViewController: BaseViewController, NavigationStyle 
     }(UIStackView())
     
     private let categoryLabel: UILabel = {
-        $0.configureImageLabel(titleImage: .folder, text: "식품 분류: 없음")
+        $0.configureImageLabel(titleImage: .folder, text: "식품 분류: 기타")
         $0.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         return $0
     }(UILabel())
@@ -339,8 +339,9 @@ extension IngredientRegistViewController {
     
     @objc private func presentHalfModal() {
         let vc = CategorySelectViewController()
-        let navi = UINavigationController(rootViewController: vc)
-        navi.modalPresentationStyle = .pageSheet
+        guard let category = categoryLabel.text?.components(separatedBy: ": ")[1] else { return }
+        
+        vc.currentCategory(category)
         
         vc.closure = { category in
             self.categoryLabel.configureImageLabel(
@@ -348,6 +349,9 @@ extension IngredientRegistViewController {
                 text: "식품 분류: \(category)"
             )
         }
+        
+        let navi = UINavigationController(rootViewController: vc)
+        navi.modalPresentationStyle = .pageSheet
         
         if let sheet = navi.sheetPresentationController {
             sheet.detents = [.medium()]     // custom은 iOS 16이상부터 가능. 아직 커스텀 적용할 필요성은 없으니 미적용.
@@ -389,7 +393,7 @@ extension IngredientRegistViewController: CustomSwitchDelegate {
             self.pickerView.alpha = 0
             self.useDateTitleLabel.configureImageLabel(
                 titleImage: .hourglass,
-                text: "소비기한: 없음"
+                text: "소비기한: 기타"
             )
             UIView.animate(withDuration: 0.3) {
                 self.useDateBottomHStack.disappear(isAlpha: false)

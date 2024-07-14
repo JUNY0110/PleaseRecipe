@@ -108,6 +108,22 @@ extension CategorySelectViewController: Compositionable {
         diffableDataSource.apply(snapshot)
     }
     
+    func currentCategory(_ category: String) {
+        let categories = IngredientSection.allCases.map { $0.title }
+        guard let index = categories.firstIndex(of: category) else {
+            currentIndex = categories.endIndex - 1
+            return
+        }
+        
+        currentIndex = index
+    }
+    
+    private func selectedCategory() {
+        let indexPath = IndexPath(row: currentIndex, section: 0)
+        collectionView.selectItem(at: indexPath, animated: true, scrollPosition: .centeredVertically)
+    }
+}
+
 
 extension CategorySelectViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
