@@ -1,5 +1,5 @@
 //
-//  UIViewController+Extension.swift
+//  UIViewController+windowScene.swift
 //  PleaseRecipe
 //
 //  Created by 지준용 on 11/9/23.

@@ -9,24 +9,46 @@ import UIKit
 
 
 protocol Compositionable {
+    func configureCollectionView()
+    func createDataSource()
+    
     func createCompositionalLayout(columns: CGFloat) -> UICollectionViewLayout
     func createCompositionalLayout(columns: CGFloat, height: CGFloat, headerElementKind: String) -> UICollectionViewLayout
 }
 
 extension Compositionable where Self: UIViewController {
+    func createCompositionalLayout() -> UICollectionViewLayout {
+        let item = configureItem(width: .estimated(200), height: .absolute(30))
+        
+        let group = configureGroup(width: .fractionalWidth(1.0),
+                                   height: .absolute(30),
+                                   interItemSpacing: 8,
+                                   subitems: [item])
+
+        let section = NSCollectionLayoutSection(group: group)
+        section.interGroupSpacing = 12
+
+        let config = UICollectionViewCompositionalLayoutConfiguration()
+        config.scrollDirection = .vertical
+
+        let layout = UICollectionViewCompositionalLayout(section: section)
+        layout.configuration = config
+        return layout
+    }
+    
     func createCompositionalLayout(columns: CGFloat) -> UICollectionViewLayout {
         let spacing: CGFloat = 12
         let safeArea: CGFloat = 16
         let size = (self.view.bounds.width - 2*safeArea - (columns-1)*spacing) / columns
         
         // MARK: Item
-        let item = self.configureItem(width: size, height: size)
+        let item = self.configureItem(width: .absolute(size), height: .absolute(size))
         
         // MARK: Group
-        let group = self.configureGroup(height: size,
-                                        count: columns,
+        let group = self.configureGroup(width: .fractionalWidth(1.0),
+                                        height: .absolute(size),
                                         interItemSpacing: spacing,
-                                        repeatingSubitem: item)
+                                        subitems: [item])
         
         // MARK: Section
         let section = self.configureSection(interGroupSpacing: spacing,
@@ -44,13 +66,13 @@ extension Compositionable where Self: UIViewController {
         let width = (self.view.bounds.width - 2*safeArea - (columns-1)*spacing) / columns
         
         // MARK: Item
-        let item = self.configureItem(width: width, height: height)
+        let item = self.configureItem(width: .absolute(width), height: .absolute(height))
         
         // MARK: Group
-        let group = self.configureGroup(height: height,
-                                        count: columns,
+        let group = self.configureGroup(width: .fractionalWidth(1.0),
+                                        height: .absolute(height),
                                         interItemSpacing: spacing,
-                                        repeatingSubitem: item)
+                                        subitems: [item])
         
         // MARK: Section
         let section = self.configureSection(interGroupSpacing: spacing,
@@ -71,31 +93,32 @@ extension Compositionable where Self: UIViewController {
     }
 }
 
+
 extension Compositionable {
-    private func configureItem(width: CGFloat, height: CGFloat) -> NSCollectionLayoutItem {
-        let itemSize = NSCollectionLayoutSize(widthDimension: .absolute(width),
-                                              heightDimension: .absolute(height))
+    private func configureItem(width: NSCollectionLayoutDimension, height: NSCollectionLayoutDimension) -> NSCollectionLayoutItem {
+        let itemSize = NSCollectionLayoutSize(widthDimension: width,
+                                              heightDimension: height)
         let item = NSCollectionLayoutItem(layoutSize: itemSize)
         
         return item
     }
     
-    private func configureGroup(height: CGFloat, count: CGFloat, interItemSpacing: CGFloat, repeatingSubitem: NSCollectionLayoutItem) -> NSCollectionLayoutGroup {
-        // 가로를 기준으로 하나의 그룹으로 묶고,높이를 통일함.
-        let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0),
-                                               heightDimension: .absolute(height))
-        let group: NSCollectionLayoutGroup
+    private func configureGroup(
+        width: NSCollectionLayoutDimension,
+        height: NSCollectionLayoutDimension,
+        interItemSpacing: CGFloat,
+        subitems: [NSCollectionLayoutItem]
+    ) -> NSCollectionLayoutGroup {
+            // 가로를 기준으로 하나의 그룹으로 묶고,높이를 통일함.
+        let groupSize = NSCollectionLayoutSize(widthDimension: width,
+                                               heightDimension: height)
         
-        if #available(iOS 16.0, *) {
-            group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
-                                                       repeatingSubitem: repeatingSubitem,
-                                                       count: Int(count))
-        } else {
-            // Fallback on earlier versions
-            group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize,
-                                                       subitem: repeatingSubitem,
-                                                       count: Int(count))
-        }
+        
+        let group = NSCollectionLayoutGroup.horizontal(
+            layoutSize: groupSize,
+            subitems: subitems
+        )
+        
         group.interItemSpacing = .fixed(interItemSpacing) // 아이템 그룹 내 좌우 아이템 사이 여백
         
         return group
@@ -113,7 +136,6 @@ extension Compositionable {
                                                         leading: safeArea,
                                                         bottom: 24,
                                                         trailing: safeArea) // 섹션별 inset)
-        
         return section
     }
     
