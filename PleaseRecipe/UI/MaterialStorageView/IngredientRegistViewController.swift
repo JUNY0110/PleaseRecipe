@@ -386,14 +386,17 @@ extension IngredientRegistViewController: CustomSwitchDelegate {
             
             UIView.animate(withDuration: 0.3) {
                 self.useDateBottomHStack.appear(isAlpha: true)
-                self.pickerView.appear(isAlpha: true)
+                
+                if self.useDateSetDirectSetting.isSelected {
+                    self.pickerView.appear(isAlpha: true)
+                }
             }
         case false:
             self.useDateBottomHStack.alpha = 0
             self.pickerView.alpha = 0
             self.useDateTitleLabel.configureImageLabel(
                 titleImage: .hourglass,
-                text: "소비기한: 기타"
+                text: "소비기한: 없음"
             )
             UIView.animate(withDuration: 0.3) {
                 self.useDateBottomHStack.disappear(isAlpha: false)
